@@ -5,7 +5,7 @@ services:
     build:
       context: .
     volumes:
-      - ..:/workspace:cached
+      - .:/workspace:cached
     command: /bin/sh -c "while sleep 1000; do :; done"
     ports:
       - 8080:8080
