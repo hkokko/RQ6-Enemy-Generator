@@ -16,7 +16,7 @@ services:
     image: mysql:8.0.39
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: mydatabase
+      MYSQL_DATABASE: mythras_eg
       MYSQL_USER: mythras_eg
       MYSQL_PASSWORD: orkkimorkkitorkki
     ports:
