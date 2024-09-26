@@ -1,0 +1,14 @@
+{
+    "name": "My Project with MySQL",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "extensions": [
+      "ms-azuretools.vscode-docker",
+      "ms-python.python"
+    ],
+    "forwardPorts": [3306],
+    "settings": {
+      "terminal.integrated.defaultProfile.linux": "/bin/bash"
+    }
+  }
