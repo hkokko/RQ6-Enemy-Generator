@@ -1,0 +1,1 @@
+sudo mysqldump mythras_eg > dump.sql
