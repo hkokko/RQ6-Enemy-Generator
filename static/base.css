@@ -37,15 +37,17 @@ h4{
 #main_container{
     position: relative;
     background: #FFFFFF;
-    min-width: 890px;
-    width: 890px;
+    /* Responsive: allow full width; Bootstrap container controls max-width */
+    min-width: 0;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
 }
 
 #header{
-    min-width: 854px;
-    width: 854px;
+    /* Responsive header width */
+    width: 100%;
+    max-width: 100%;
     font-size: 50px;
     background: black;
     margin: 10px;
@@ -102,13 +104,12 @@ h4{
 
 #main_content{
     position: relative;
-    margin: 10px 10px 0px 10px;
+    margin: 10px;
     background: #7F5924;
-    height: 100%;
-    min-width: 854px;
-    width: 854px;
-    display: inline-block;
-    padding: 8px;
+    height: auto;
+    width: 100%;
+    display: block;
+    padding: 16px;
     color: white;
 }
 
@@ -131,9 +132,8 @@ h4{
 
 /* Index starts */
 div#et_filter_container{
-    position: absolute;
-    right: 10px;
-    top: 10px;
+    position: static;
+    float: none;
 }
 
 #enemy_template_list_container{
@@ -410,9 +410,9 @@ div#results_number{
     width: 200px;
 }
 div#generate_button_container{
-    position: absolute;
-    right: 10px;
-    top: 8px;
+    position: static;
+    text-align: right;
+    margin-top: 8px;
 }
 input.disabled{
     border-color: #ccc;

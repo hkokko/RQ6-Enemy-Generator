@@ -1,27 +1,68 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<div id="search_container">
-    <input id="search" size="60" type="text" class="form-control d-inline-block w-auto me-2" /> <button id="search_button" class="btn btn-primary btn-sm">Search</button>
-    <div class="rank_filter">
-        Filter by rank:
-        <input type="checkbox" id="1" class="rank form-check-input me-1" /> Rabble |
-        <input type="checkbox" id="2" class="rank form-check-input me-1" /> Novice |
-        <input type="checkbox" id="3" class="rank form-check-input me-1" /> Skilled |
-        <input type="checkbox" id="4" class="rank form-check-input me-1" /> Veteran |
-        <input type="checkbox" id="5" class="rank form-check-input me-1" /> Master
+<div id="search_container" class="container mb-3">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+        <input id="search" size="60" type="text" class="form-control d-inline-block w-auto" />
+        <button id="search_button" class="btn btn-primary btn-sm">Search</button>
+    </div>
+    <div class="rank_filter mb-1">
+        <span class="me-2">Filter by rank:</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="1" class="rank form-check-input" />
+            <label class="form-check-label" for="1">Rabble</label>
+        </span>
+        <span class="text-muted me-1">|</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="2" class="rank form-check-input" />
+            <label class="form-check-label" for="2">Novice</label>
+        </span>
+        <span class="text-muted me-1">|</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="3" class="rank form-check-input" />
+            <label class="form-check-label" for="3">Skilled</label>
+        </span>
+        <span class="text-muted me-1">|</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="4" class="rank form-check-input" />
+            <label class="form-check-label" for="4">Veteran</label>
+        </span>
+        <span class="text-muted me-1">|</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="5" class="rank form-check-input" />
+            <label class="form-check-label" for="5">Master</label>
+        </span>
     </div>
     <div class="rank_filter">
-        Filter by cult rank:
-        <input type="checkbox" id="1" class="cult_rank form-check-input me-1" /> Common |
-        <input type="checkbox" id="2" class="cult_rank form-check-input me-1" /> Dedicated |
-        <input type="checkbox" id="3" class="cult_rank form-check-input me-1" /> Proven |
-        <input type="checkbox" id="4" class="cult_rank form-check-input me-1" /> Overseer |
-        <input type="checkbox" id="5" class="cult_rank form-check-input me-1" /> Leader
+        <span class="me-2">Filter by cult rank:</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="1" class="cult_rank form-check-input" />
+            <label class="form-check-label" for="1">Common</label>
+        </span>
+        <span class="text-muted me-1">|</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="2" class="cult_rank form-check-input" />
+            <label class="form-check-label" for="2">Dedicated</label>
+        </span>
+        <span class="text-muted me-1">|</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="3" class="cult_rank form-check-input" />
+            <label class="form-check-label" for="3">Proven</label>
+        </span>
+        <span class="text-muted me-1">|</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="4" class="cult_rank form-check-input" />
+            <label class="form-check-label" for="4">Overseer</label>
+        </span>
+        <span class="text-muted me-1">|</span>
+        <span class="form-check form-check-inline align-middle me-1">
+            <input type="checkbox" id="5" class="cult_rank form-check-input" />
+            <label class="form-check-label" for="5">Leader</label>
+        </span>
     </div>
 </div>
-<div id="results_number">&nbsp;</div>
-<div id="search_results" style="display: none;">
+<div id="results_number" class="text-muted small ms-1">&nbsp;</div>
+<div id="search_results" class="table-responsive mt-2" style="display: none;">
     <table id="search_results_table" class="table table-sm table-striped table-hover">
         {% include 'enemy_list_table_head.html' %}
     </table>
@@ -29,33 +70,33 @@
 
 <form action="{% url 'generate_enemies' %}" method="post" target="_blank">
     {% csrf_token %}
-    <div id="selected_enemy_template_list_container" style="display:none;">
+    <div id="selected_enemy_template_list_container" class="table-responsive mt-3" style="display:none;">
         <table id="selected_enemy_template_list" class="table table-sm table-striped">
             {% include 'enemy_list_table_head.html' %}
         </table>
         <hr>
     </div>
-    <div id="generate_button_container">
+    <div id="generate_button_container" class="text-end mt-2">
         <input id="generate_button" disabled class="btn btn-success disabled" type="submit" name="generate" value="Generate"><br>
     </div>
 </form>
 
 {% if not templates %}
-<div id="getting_started">
-    <h2>Getting started</h2>
-    <p>Use the Search functionality to find templates or browse the <a href="{% url 'index' %}">full template list</a> (very slow!).</p>
-    <p>To generate enemies, enter amount and hit Generate.</p>
+<div id="getting_started" class="alert alert-info mt-4">
+    <h2 class="h4 mb-2">Getting started</h2>
+    <p class="mb-1">Use the Search functionality to find templates or browse the <a href="{% url 'index' %}">full template list</a> (very slow!).</p>
+    <p class="mb-1">To generate enemies, enter amount and hit Generate.</p>
     {% if user.is_authenticated %}
-    <p>Create your own templates on <a href="{% url 'edit_index' %}">My Content</a> -page.</p>
-    <p>Star your favorite templates to see them in this starting page.</p>
+    <p class="mb-1">Create your own templates on <a href="{% url 'edit_index' %}">My Content</a> -page.</p>
+    <p class="mb-1">Star your favorite templates to see them in this starting page.</p>
     {% else %}
-    <p><a href="/accounts/register/">Register</a> and <a href="{% url 'login' %}">log in</a> to create your own templates!</p>
+    <p class="mb-1"><a href="/accounts/register/">Register</a> and <a href="{% url 'login' %}">log in</a> to create your own templates!</p>
     {% endif %}
-    <p>Visit <a href="{% url 'instructions' %}">Help</a> for more info.</p>
+    <p class="mb-0">Visit <a href="{% url 'instructions' %}">Help</a> for more info.</p>
 </div>
 {% endif %}
-<div id="searching">
-    <img src="{% static 'images/loading.gif' %}" height="80" width="80" />
+<div id="searching" class="text-center my-4">
+    <img src="{% static 'images/loading.gif' %}" height="80" width="80" class="img-fluid" />
 </div>
 {% include 'enemy_template_list.html' %}
 
