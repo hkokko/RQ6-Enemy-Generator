@@ -21,3 +21,20 @@ def pytest_collection_modifyitems(session: pytest.Session, config: pytest.Config
             head.append(it)
     if tail:
         items[:] = head + tail
+
+
+
+# --- Test session DB hygiene and username helpers ---
+import uuid
+from django.contrib.auth import get_user_model
+
+
+
+
+@pytest.fixture()
+def localtest_username() -> str:
+    """
+    Provide a unique username starting with 'localtest-' for each test invocation.
+    Example: localtest-<10-hex-chars>
+    """
+    return f"localtest-{uuid.uuid4().hex[:10]}"

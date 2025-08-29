@@ -68,14 +68,12 @@ except Exception:
     # If unavailable, environment variables must be exported by the shell.
     pass
 
-# Mandatory MySQL configuration (SQLite disabled by requirement)
+# Database configuration (MySQL only; SQLite fallback removed by requirement)
 DB_NAME = os.environ.get("DB_NAME")
 if not DB_NAME:
     raise RuntimeError(
-        "DB_NAME is not set. SQLite is disabled for this project. "
-        "Set DB_NAME and other DB_* variables in .env or environment."
+        "DB_NAME is not set. This project requires MySQL. Set DB_NAME and other DB_* variables in .env or environment."
     )
-
 
 # Support both uppercase (legacy) and lowercase (requested) env keys for DB credentials
 _DB_USER = os.environ.get("db_user") or os.environ.get("DB_USER") or "mythras_eg"
@@ -88,22 +86,13 @@ if not _DB_PASSWORD:
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.environ.get("DB_NAME", "mythras_eg"),
+        "NAME": DB_NAME,
         "USER": _DB_USER,
         "PASSWORD": _DB_PASSWORD,
-        "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
-        "PORT": os.environ.get("DB_PORT", "3308"),
-        "OPTIONS": {
-            "charset": "utf8mb4",
-            "init_command": "SET sql_mode='STRICT_ALL_TABLES'",
-            "connect_timeout": 5,
-            "read_timeout": 5,
-            "write_timeout": 5,
-            "ssl": {},
-        },
-        # Use the same database for tests (no separate test_ database)
+        "HOST": os.environ.get("DB_HOST", ""),
+        "PORT": os.environ.get("DB_PORT", ""),
         "TEST": {
-            "MIRROR": "default",
+            "NAME": DB_NAME
         },
     }
 }
