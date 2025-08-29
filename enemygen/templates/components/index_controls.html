@@ -23,13 +23,13 @@
         <input id="searchinput" class="form-control form-control-sm d-inline-block w-auto align-middle" />
       </div>
 
-      <!-- Generate form: buttons (the rest of the form continues in list component) -->
-      <div class="col-auto">
-        <div class="btn-group btn-group-sm" role="group" aria-label="Generate actions">
-          <!-- These buttons will submit the generate_enemies form defined in the list component via form attribute -->
-          <input id="generate_button" type="submit" form="generate_enemies_form" disabled name="generate" value="Generate" class="btn btn-primary disabled" aria-disabled="true">
-          <input type="submit" form="generate_enemies_form" name="lucky" value="Do you feel lucky?" class="btn btn-outline-secondary">
-        </div>
+      <!-- Generate and Lucky buttons with fixed spacing of ~2 button widths -->
+      <div class="col-auto d-flex align-items-center">
+        <!-- Submits the generate_enemies form defined in the list component via form attribute -->
+        <input id="generate_button" type="submit" form="generate_enemies_form" disabled name="generate" value="Generate" class="btn btn-primary btn-sm disabled" aria-disabled="true">
+        <!-- Spacer approximating two .btn-sm widths -->
+        <span aria-hidden="true" style="display:inline-block; width: 12rem;"></span>
+        <input type="submit" form="generate_enemies_form" name="lucky" value="Do you feel lucky?" class="btn btn-outline-secondary btn-sm">
       </div>
     </div>
   </div>
