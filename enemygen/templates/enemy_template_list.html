@@ -1,6 +1,6 @@
 {% load static %}
-<div id="enemy_template_list_container">
-<table id="enemy_template_list" class="index_list">
+<div id="enemy_template_list_container" class="table-responsive w-100">
+<table id="enemy_template_list" class="table table-striped table-hover table-sm align-middle w-100">
     {% include 'enemy_list_table_head.html' %}
     {% for et in templates %}
         <tr>
@@ -12,7 +12,7 @@
                 {% endif %}
             </td>
             <td><a class="edit_item" href="{% url 'enemy_template' et.id %}">{{ et.name }}</a> {% if not et.published %}<b>*</b>{% endif %}</td>
-            <td><input id="enemy_template_id_{{et.id}}" name="enemy_template_id_{{et.id}}" size="4" min="0" max="40" type="number" class="enemy_amount"></td>
+            <td><input id="enemy_template_id_{{et.id}}" name="enemy_template_id_{{et.id}}" size="4" min="0" max="40" type="number" class="form-control form-control-sm enemy_amount w-auto d-inline-block"></td>
             <td><a class="edit_item" href="{% url 'race' et.race.id %}">{{ et.race.name }}</a></td>
             <td>
                 {% if et.rank == 1 %}1&nbsp;Rabble{% endif %}

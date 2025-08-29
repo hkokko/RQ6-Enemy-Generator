@@ -49,7 +49,8 @@ def index_json(request):
 
 def home(request):
     context = get_context(request)
-    context['templates'] = get_enemy_templates('Starred', request.user)
+    # Home shows starred items explicitly
+    context['templates'] = EnemyTemplate.get_starred(request.user)
     return render(request, 'home.html', context)
 
 
