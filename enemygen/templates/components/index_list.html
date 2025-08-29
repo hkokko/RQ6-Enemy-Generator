@@ -1,0 +1,12 @@
+<!-- List component: selected list container and main list, with a single form wrapping list inputs -->
+<form id="generate_enemies_form" class="d-block" action="{% url 'generate_enemies' %}" method="post" target="_blank">
+  {% csrf_token %}
+  <div class="table-responsive mt-2" style="display:none;" id="selected_enemy_template_list_container">
+    <table id="selected_enemy_template_list" class="table table-sm table-striped align-middle w-100">
+      {% include 'enemy_list_table_head.html' %}
+    </table>
+    <hr>
+  </div>
+  <!-- Ensure the main enemy list fills the available width and responds to container sizing -->
+  {% include 'enemy_template_list.html' %}
+</form>

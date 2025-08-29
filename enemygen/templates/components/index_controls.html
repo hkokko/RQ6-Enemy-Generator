@@ -1,0 +1,36 @@
+<!-- Controls component: filter, search, and buttons -->
+<div class="card mb-3">
+  <div class="card-body py-2">
+    <div class="controls-row row gx-2 gy-1 flex-nowrap align-items-center w-100 text-nowrap overflow-auto">
+      <!-- Filter form -->
+      <div class="col-auto">
+        <label for="filter-select" class="form-label mb-0 me-1">Filter:</label>
+        <form action="{% url 'set_filter' %}" method="post" class="d-inline-block align-middle">
+          <input type="hidden" name="coming_from" value="{{request.path}}">
+          {% csrf_token %}
+          <select id="filter-select" name="filter" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+            <option value="None" {% if filter == 'None' %}selected="selected"{% endif %}>None</option>
+            {% for tag in all_et_tags %}
+              <option value="{{ tag.name }}" {% if filter == tag.name %}selected="selected"{% endif %}>{{ tag.name }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+
+      <!-- Search field -->
+      <div class="col-auto">
+        <label for="searchinput" class="form-label mb-0 me-1">Search:</label>
+        <input id="searchinput" class="form-control form-control-sm d-inline-block w-auto align-middle" />
+      </div>
+
+      <!-- Generate form: buttons (the rest of the form continues in list component) -->
+      <div class="col-auto">
+        <div class="btn-group btn-group-sm" role="group" aria-label="Generate actions">
+          <!-- These buttons will submit the generate_enemies form defined in the list component via form attribute -->
+          <input id="generate_button" type="submit" form="generate_enemies_form" disabled name="generate" value="Generate" class="btn btn-primary disabled" aria-disabled="true">
+          <input type="submit" form="generate_enemies_form" name="lucky" value="Do you feel lucky?" class="btn btn-outline-secondary">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
