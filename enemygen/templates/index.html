@@ -3,40 +3,47 @@
 {% block content %}
 <div class="card mb-3">
   <div class="card-body py-2">
-    <div class="controls-row d-flex align-items-center flex-nowrap gap-3 overflow-auto w-100 text-nowrap">
+    <!-- Use Bootstrap grid with col-auto for Safari robustness -->
+    <div class="controls-row row gx-2 gy-1 flex-nowrap align-items-center w-100 text-nowrap overflow-auto">
       <!-- Filter form -->
-      <label for="filter-select" class="form-label mb-0 flex-shrink-0">Filter:</label>
-      <form action="{% url 'set_filter' %}" method="post" class="d-inline-block flex-shrink-0">
-        <input type="hidden" name="coming_from" value="{{request.path}}">
-        {% csrf_token %}
-        <select id="filter-select" name="filter" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
-          <option value="None" {% if filter == 'None' %}selected="selected"{% endif %}>None</option>
-          {% for tag in all_et_tags %}
-            <option value="{{ tag.name }}" {% if filter == tag.name %}selected="selected"{% endif %}>{{ tag.name }}</option>
-          {% endfor %}
-        </select>
-      </form>
+      <div class="col-auto">
+        <label for="filter-select" class="form-label mb-0 me-1">Filter:</label>
+        <form action="{% url 'set_filter' %}" method="post" class="d-inline-block align-middle">
+          <input type="hidden" name="coming_from" value="{{request.path}}">
+          {% csrf_token %}
+          <select id="filter-select" name="filter" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+            <option value="None" {% if filter == 'None' %}selected="selected"{% endif %}>None</option>
+            {% for tag in all_et_tags %}
+              <option value="{{ tag.name }}" {% if filter == tag.name %}selected="selected"{% endif %}>{{ tag.name }}</option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
 
       <!-- Search field -->
-      <label for="searchinput" class="form-label mb-0 flex-shrink-0">Search:</label>
-      <input id="searchinput" class="form-control form-control-sm w-auto flex-shrink-0" />
+      <div class="col-auto">
+        <label for="searchinput" class="form-label mb-0 me-1">Search:</label>
+        <input id="searchinput" class="form-control form-control-sm d-inline-block w-auto align-middle" />
+      </div>
 
       <!-- Generate form: buttons on the same row -->
-      <form class="d-inline flex-shrink-0" action="{% url 'generate_enemies' %}" method="post" target="_blank">
-        {% csrf_token %}
-        <div class="btn-group btn-group-sm" role="group" aria-label="Generate actions">
-          <input id="generate_button" type="submit" disabled name="generate" value="Generate" class="btn btn-primary disabled" aria-disabled="true">
-          <input type="submit" name="lucky" value="Do you feel lucky?" class="btn btn-outline-secondary">
-        </div>
-        <!-- The rest of this form continues below the row -->
-        <div class="mt-2" style="display:none;" id="selected_enemy_template_list_container">
-          <table id="selected_enemy_template_list" class="table table-sm table-striped align-middle w-100">
-            {% include 'enemy_list_table_head.html' %}
-          </table>
-          <hr>
-        </div>
-        {% include 'enemy_template_list.html' %}
-      </form>
+      <div class="col-auto">
+        <form class="d-inline-block align-middle" action="{% url 'generate_enemies' %}" method="post" target="_blank">
+          {% csrf_token %}
+          <div class="btn-group btn-group-sm" role="group" aria-label="Generate actions">
+            <input id="generate_button" type="submit" disabled name="generate" value="Generate" class="btn btn-primary disabled" aria-disabled="true">
+            <input type="submit" name="lucky" value="Do you feel lucky?" class="btn btn-outline-secondary">
+          </div>
+          <!-- The rest of this form continues below the row -->
+          <div class="mt-2" style="display:none;" id="selected_enemy_template_list_container">
+            <table id="selected_enemy_template_list" class="table table-sm table-striped align-middle w-100">
+              {% include 'enemy_list_table_head.html' %}
+            </table>
+            <hr>
+          </div>
+          {% include 'enemy_template_list.html' %}
+        </form>
+      </div>
     </div>
   </div>
 </div>

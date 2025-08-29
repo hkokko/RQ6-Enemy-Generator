@@ -137,7 +137,7 @@ div#et_filter_container{
 }
 
 #enemy_template_list_container{
-    height: 200px;
+    max-height: 50vh; /* allow taller on large screens */
     overflow: auto;
 }
 
@@ -548,6 +548,8 @@ button[disabled] {
 }
 
 /* Ensure the enemy list container and table use the full available width */
+.card-body { min-width: 0; }
+.table-responsive { width: 100%; min-width: 0; }
 #enemy_template_list_container {
     width: 100%;
     min-width: 0;
@@ -555,3 +557,17 @@ button[disabled] {
 #enemy_template_list {
     width: 100%;
 }
+
+/* Ensure flex children are allowed to shrink (Safari) */
+#main_container, #main_content, .container-fluid { min-width: 0; }
+
+/* Your file already does most of this, but add these if missing */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  min-width: 0;
+}
+
+/* If #search_results sits inside any flex item, give it min-width:0 too */
+#search_results { min-width: 0; }
