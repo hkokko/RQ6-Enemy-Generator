@@ -137,7 +137,7 @@ div#et_filter_container{
 }
 
 #enemy_template_list_container{
-    max-height: 50vh; /* allow taller on large screens */
+    /* Let JS set exact height to fit viewport dynamically */
     overflow: auto;
 }
 
