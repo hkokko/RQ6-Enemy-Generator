@@ -1,33 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div id="et_filter_container">
-    Filter:
-    <form action="{% url 'set_party_filter' %}" method="post" style="display: inline-block;">
-    <input type="hidden" name="coming_from" value="{{request.path}}">
-    {% csrf_token %}
-    <select name="party_filter" onchange="this.form.submit()">
-            <option value="None" {% if filter == 'None' %}selected="selected"{% endif %}>None</option>
-        {% for tag in all_party_tags %}
-            <option value="{{ tag.name }}" {% if tag.name == party_filter %}selected="selected"{% endif %}>{{ tag }}</option>
-        {% endfor %}
-    </select>
-    </form>
-</div>
-
-<div>
-    Type to search: <input id="searchinput" /> | <form style="display: inline-block;" action="{% url 'generate_party' %}" method="post" target="_blank">
+<div id="et_filter_container" class="mb-2">
+    <div class="d-inline-flex align-items-center gap-2">
+      <label for="party-filter" class="form-label mb-0">Filter:</label>
+      <form action="{% url 'set_party_filter' %}" method="post" class="d-inline-block align-middle">
+        <input type="hidden" name="coming_from" value="{{request.path}}">
         {% csrf_token %}
-        <input type="submit" name="lucky" value="Do you feel lucky?">
+        <select id="party-filter" name="party_filter" class="form-select form-select-sm d-inline-block w-auto" onchange="this.form.submit()">
+                <option value="None" {% if filter == 'None' %}selected="selected"{% endif %}>None</option>
+            {% for tag in all_party_tags %}
+                <option value="{{ tag.name }}" {% if tag.name == party_filter %}selected="selected"{% endif %}>{{ tag }}</option>
+            {% endfor %}
+        </select>
+      </form>
+    </div>
+</div>
+
+<div class="mb-2 d-flex align-items-center gap-2 flex-wrap">
+    <label for="searchinput" class="form-label mb-0">Type to search:</label>
+    <input id="searchinput" class="form-control form-control-sm d-inline-block w-auto" />
+    <form class="d-inline-block" action="{% url 'generate_party' %}" method="post" target="_blank">
+        {% csrf_token %}
+        <input type="submit" name="lucky" value="Do you feel lucky?" class="btn btn-outline-secondary btn-sm">
     </form>
 </div>
 
 
-<div id="party_list_container">
-<table id="party_list" class="index_list">
-    <thead><tr>
+<div id="party_list_container" class="table-responsive">
+<table id="party_list" class="table table-sm table-striped table-hover align-middle">
+    <thead class="table-dark"><tr>
         <th class="sort-alpha">Party</th>
-        <td></td>
+        <th></th>
         <th class="sort-alpha">Creator</th>
         <th class="sort-alpha">Tags</th>
     </tr></thead>
@@ -38,7 +42,7 @@
                 <form action="{% url 'generate_party' %}" method="post" target="_blank">
                     <input type="hidden" name="party_id" value="{{ p.id }}">
                     {% csrf_token %}
-                    <input type="submit" name="generate" class="party_submit" value="Generate">
+                    <input type="submit" name="generate" class="btn btn-primary btn-sm" value="Generate">
                 </form>
             </td>
             <td>{{ p.owner }}</td>
