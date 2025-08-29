@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^accounts/register/$', MyRegistrationView.as_view(), name='registration_register'),
     # this above is mandatory?
     #url(r'^admin/', admin.site.urls),
+    path("accounts/", include("django_registration.backends.activation.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
 
     path("admin/", admin.site.urls),

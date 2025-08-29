@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_registration",
     "taggit",
     "enemygen",
 ]
@@ -151,3 +152,12 @@ except Exception:
 
 # Optional: value used by enemygen.urls if present
 WEB_ROOT = ""
+
+# Django registration configuration
+ACCOUNT_ACTIVATION_DAYS = int(os.environ.get("ACCOUNT_ACTIVATION_DAYS", 7))
+LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = "/accounts/login/"
+
+# Minimal email backend defaults for development; override in environment for production
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "webmaster@localhost")
