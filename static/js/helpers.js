@@ -101,8 +101,9 @@ function bind_amount_listeners(event){
         $('#'+input_id).focus().val('').val(val);
         set_column_width();
         set_template_list_height();
-        $('#generate_button').removeClass('disabled');
+        $('#generate_button').removeClass('disabled d-none');
         $('#generate_button').prop('disabled', false);
+        $('#generate_button_container').show(0);
     }
 }
 

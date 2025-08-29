@@ -126,8 +126,8 @@ h4{
 }
 
 .rank_filter input{
-    position: relative;
-    top: 2px;
+    position: static;
+    top: auto;
 }
 
 /* Index starts */
