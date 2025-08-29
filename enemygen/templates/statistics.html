@@ -2,54 +2,92 @@
 
 {% block content %}
 
-<h2>Index</h2>
-<a href="#users">Users</a><br>
-<a href="#templates">Templates</a><br>
-<a href="#races">Races</a><br>
-<a href="#cults">Cults</a><br><br>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12 col-lg-3">
+      <div class="card mb-3"><div class="card-body py-3">
+        <h2 class="h5 mb-3">Index</h2>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-1"><a href="#users">Users</a></li>
+          <li class="mb-1"><a href="#templates">Templates</a></li>
+          <li class="mb-1"><a href="#races">Races</a></li>
+          <li class="mb-0"><a href="#cults">Cults</a></li>
+        </ul>
+      </div></div>
+    </div>
+    <div class="col-12 col-lg-9">
+      <div id="users" class="card mb-3"><div class="card-body">
+        <h2 class="h4">Users with most templates</h2>
+        <div class="table-responsive mt-2">
+          <table class="table table-sm table-striped align-middle">
+            <thead class="table-dark"><tr><th>User</th><th>Templates</th></tr></thead>
+            <tbody>
+            {% for user in statistics.users %}
+              <tr><td>{{user.name}}</td><td>{{user.template_amount}}</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="mb-0"><b>Total number of published templates: {{ statistics.total_published_templates }}</b></p>
+      </div></div>
 
-<a name="users"></a><h2>Users with most templates</h2>
-<table>
-<tr><th>User</th><th>Templates</th></tr>
-{% for user in statistics.users %}
-<tr><td>{{user.name}}</td><td>{{user.template_amount}}</td></tr>
-{% endfor %}
-<p><b>Total number of published templates: {{ statistics.total_published_templates }}</b></p>
-</table>
+      <div id="templates" class="card mb-3"><div class="card-body">
+        <h2 class="h4">Templates</h2>
+        <div class="table-responsive mt-2">
+          <table class="table table-sm table-striped table-hover align-middle">
+            <thead class="table-dark"><tr><th>Template</th><th>Times Generated</th></tr></thead>
+            <tbody>
+            {% for template in statistics.templates %}
+              <tr><td><a href="{% url 'enemy_template' template.id %}">{{template.name}}</a></td><td>{{template.generated}}</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div></div>
 
-<a name="templates"></a><h2>Templates</h2>
-<table>
-<tr><th>Template</th><th>Times Generated</th></tr>
-{% for template in statistics.templates %}
-<tr><td><a href="{% url 'enemy_template' template.id %}">{{template.name}}</a></td><td>{{template.generated}}</td></tr>
-{% endfor %}
-</table>
+      <div id="races" class="card mb-3"><div class="card-body">
+        <h2 class="h4">Races</h2>
+        <p class="mb-2"><b>Total number of published races: {{ statistics.total_published_races }}</b></p>
+        <div class="table-responsive">
+          <table class="table table-sm table-striped align-middle">
+            <thead class="table-dark"><tr><th>Race</th><th>Templates</th></tr></thead>
+            <tbody>
+            {% for race in statistics.races %}
+              <tr><td><a href="{% url 'race' race.id %}">{{race.name}}</a></td><td>{{race.template_amount}}</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div></div>
 
-<a name="races"></a><h2>Races</h2>
-<p><b>Total number of published races: {{ statistics.total_published_races }}</b></p>
-<table>
-<tr><th>Race</th><th>Templates</th></tr>
-{% for race in statistics.races %}
-<tr><td><a href="{% url 'race' race.id %}">{{race.name}}</a></td><td>{{race.template_amount}}</td></tr>
-{% endfor %}
-</table>
-
-<a name="cults"></a><h2>Cults</h2>
-<table>
-    <tr><th>Rank</th><th>Number of cults</th></tr>
-    <tr><td>Common / Lay Member / Follower / Novice / Aspirant</td><td>{{ statistics.common_cults }}</td></tr>
-    <tr><td>Dedicated / Initiate / Spirit Worshipper / Apprentice / Student</td><td>{{ statistics.dedicated_cults }}</td></tr>
-    <tr><td>Proven / Acolyte / Shaman / Adept / Disciple</td><td>{{ statistics.proven_cults }}</td></tr>
-    <tr><td>Overseer / Priest / High Shaman / Mage / Master</td><td>{{ statistics.overseer_cults }}</td></tr>
-    <tr><td>Leader / High Priest / Spirit Lord / Arch Mage / Sage / Grand Master</td><td>{{ statistics.leader_cults }}</td></tr>
-    <tr><td><b>Total</b></td><td><b>{{ statistics.total_published_cults }}</b></td></tr>
-</table>
-<br><br>
-<table>
-<tr><th>Cult</th><th>Rank</th></tr>
-{% for cult in statistics.cults %}
-<tr><td><a href="{% url 'enemy_template' cult.id %}">{{cult.name}}</a></td><td>{{cult.rank}}</td></tr>
-{% endfor %}
-</table>
+      <div id="cults" class="card mb-3"><div class="card-body">
+        <h2 class="h4">Cults</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead class="table-dark"><tr><th>Rank</th><th>Number of cults</th></tr></thead>
+            <tbody>
+              <tr><td>Common / Lay Member / Follower / Novice / Aspirant</td><td>{{ statistics.common_cults }}</td></tr>
+              <tr><td>Dedicated / Initiate / Spirit Worshipper / Apprentice / Student</td><td>{{ statistics.dedicated_cults }}</td></tr>
+              <tr><td>Proven / Acolyte / Shaman / Adept / Disciple</td><td>{{ statistics.proven_cults }}</td></tr>
+              <tr><td>Overseer / Priest / High Shaman / Mage / Master</td><td>{{ statistics.overseer_cults }}</td></tr>
+              <tr><td>Leader / High Priest / Spirit Lord / Arch Mage / Sage / Grand Master</td><td>{{ statistics.leader_cults }}</td></tr>
+              <tr><td><b>Total</b></td><td><b>{{ statistics.total_published_cults }}</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-responsive mt-3">
+          <table class="table table-sm table-striped table-hover align-middle">
+            <thead class="table-dark"><tr><th>Cult</th><th>Rank</th></tr></thead>
+            <tbody>
+            {% for cult in statistics.cults %}
+              <tr><td><a href="{% url 'enemy_template' cult.id %}">{{cult.name}}</a></td><td>{{cult.rank}}</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
