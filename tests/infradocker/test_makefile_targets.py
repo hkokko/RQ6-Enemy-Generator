@@ -5,7 +5,7 @@ from .conftest import run, MAKEFILE_PATH
 
 REQUIRED_TARGETS = [
     'start-db', 'sql',
-    'mysql-shell', 'mysql-shell-root', 'mysql-shell-db', 'mysql-shell-app',
+    'mysql-shell', 'mysql-shell-root',
     'upload-dump', 'upload-dump-debug', 'upload-dump-compat', 'upload-dump-compat-debug',
     'mysql-create-user', 'mysql-fix-auth',
     'ps-docker', 'logs-db', 'logs-db-follow',

@@ -52,12 +52,6 @@ mysql-shell-root:
 	: $${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD required}; \
 	MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" $(DOCKER) exec -it $(CONTAINER_NAME) mysql -uroot
 
-mysql-shell-db:
-	@$(MAKE) mysql-shell
-
-mysql-shell-app:
-	@$(MAKE) mysql-shell
-
 sql:
 	@ENV_FILE=.env; \
 	# Load DB_* vars; if missing, fallback to MYSQL_* commonly used with Docker
@@ -107,14 +101,6 @@ docker-run-minimal:
 # Helper to ensure scripts are executable
 scripts-chmod:
 	chmod +x *.sh tools/*.sh 2>/dev/null || true
-
-# Utility
-show-running-container show-container:
-	@echo "Showing status for container: $(CONTAINER_NAME)"
-	@$(DOCKER) ps --filter "name=$(CONTAINER_NAME)" --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
-
-ps-docker-running:
-	@$(DOCKER) ps --filter "status=running"
 
 # Utility
 show-running-container show-container:

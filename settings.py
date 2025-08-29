@@ -89,13 +89,15 @@ DATABASES = {
         "NAME": DB_NAME,
         "USER": _DB_USER,
         "PASSWORD": _DB_PASSWORD,
-        "HOST": os.environ.get("DB_HOST", ""),
-        "PORT": os.environ.get("DB_PORT", ""),
+        "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
+        "PORT": os.environ.get("DB_PORT", "3308"),
         "TEST": {
             "NAME": DB_NAME
         },
     }
 }
+
+DATABASES["default"]["TEST"] = {"NAME": os.getenv("DB_NAME", "mythras_eg")}
 
 LOGGING = {
     "version": 1,
