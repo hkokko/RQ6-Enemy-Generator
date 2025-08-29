@@ -14,6 +14,7 @@ mkdir temp
 python3.11 -m venv /meg/venv
 source /meg/venv/bin/activate
 pip install -r requirements.txt
+python3 tools/fetch_zephyr_assets.py || true
 sudo mysql_secure_installation
 
 sudo cat > /etc/systemd/system/gunicorn.socket <<EOF

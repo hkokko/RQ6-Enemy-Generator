@@ -1,5 +1,22 @@
 # Mythras Encounter Generator
 
+## Zephyr theme assets (Bootswatch)
+This project references local Bootstrap Zephyr theme assets from:
+- static/themes/bootstrap/zephyr/css/bootstrap.min.css
+- static/themes/bootstrap/zephyr/js/bootstrap.bundle.min.js
+
+If these files are missing (e.g., on a fresh clone), fetch them with:
+
+```
+make fetch-zephyr
+```
+
+This will download:
+- CSS from https://cdn.jsdelivr.net/npm/bootswatch@5/dist/zephyr/bootstrap.min.css
+- JS bundle from https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.bundle.min.js
+
+The script only downloads files that are missing and creates directories as needed.
+
 A tool for Mythras GM's for generating enemy stats.
 
 Hosted at https://mythras.skoll.xyz/

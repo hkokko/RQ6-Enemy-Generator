@@ -107,6 +107,10 @@ show-running-container show-container:
 	@echo "Showing status for container: $(CONTAINER_NAME)"
 	@$(DOCKER) ps --filter "name=$(CONTAINER_NAME)" --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
 
+# Fetch Zephyr CSS/JS locally if missing
+fetch-zephyr:
+	@python3 tools/fetch_zephyr_assets.py
+
 ps-docker-running:
 	@$(DOCKER) ps --filter "status=running"
 
