@@ -524,3 +524,34 @@ button[disabled] {
     border-color: #6c757d;
     color: #e9ecef;
 }
+
+
+/* Safari-specific layout robustness for controls row and table container */
+.controls-row {
+    /* Keep everything on one line; allow horizontal scroll if needed */
+    min-width: 0;
+    white-space: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on iOS/macOS Safari */
+}
+.controls-row > * {
+    /* Prevent Safari from shrinking/wrapping children unexpectedly */
+    flex: 0 0 auto;
+}
+.controls-row .btn-group {
+    display: inline-flex;
+    flex-wrap: nowrap;
+}
+/* Fallback spacing for browsers without flex-gap support (e.g., older Safari) */
+.controls-row.gap-3 > * + * {
+    margin-left: 1rem; /* approximate gap-3 */
+}
+
+/* Ensure the enemy list container and table use the full available width */
+#enemy_template_list_container {
+    width: 100%;
+    min-width: 0;
+}
+#enemy_template_list {
+    width: 100%;
+}
