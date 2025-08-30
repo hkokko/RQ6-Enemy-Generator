@@ -1,3 +1,4 @@
+{% load static %}
 <h3>Combat styles</h3>
 {% for cs in combat_styles %}
 <input id="combat_style_name_{{cs.id}}" class="data" type="text" size="30" item_id="{{cs.id}}" item_type="et_combat_style_name" value="{{ cs.name }}" />
