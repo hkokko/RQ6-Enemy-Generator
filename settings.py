@@ -68,6 +68,23 @@ except Exception:
     # If unavailable, environment variables must be exported by the shell.
     pass
 
+# Optional: configure paths for cairo/pango libraries to help WeasyPrint on macOS/Linux
+# If the project defines CAIRO_* paths in .env, export them into process env early.
+for key in (
+    'CAIRO_PATH',             # generic search path dir
+    'CAIRO_LIBRARY_PATH',     # directory containing libcairo dylib/so
+    'CAIRO_DLL_PATH',         # explicit file path to cairo dll/dylib/so
+    'DYLD_LIBRARY_PATH',      # macOS dynamic loader search path
+    'LD_LIBRARY_PATH',        # Linux ELF loader search path
+    'PANGO_PATH',             # optional pango location
+    'GDK_PIXBUF_MODULEDIR',   # optional gdk-pixbuf loaders dir
+    'GDK_PIXBUF_MODULE_FILE', # optional gdk-pixbuf cache file
+):
+    val = os.environ.get(key) or None
+    if val:
+        # Re-assign to ensure it propagates for subprocesses and ctypes loader
+        os.environ[key] = val
+
 # Database configuration (MySQL only; SQLite fallback removed by requirement)
 DB_NAME = os.environ.get("DB_NAME")
 if not DB_NAME:
@@ -130,7 +147,16 @@ STATIC_ROOT = str(BASE_DIR / "static_root")
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # Use a custom test runner that does not create/drop databases. It only checks connectivity.
+# Requirement: do not use test_<db> at all; never create or drop databases during tests.
 TEST_RUNNER = "tests_no_db.NoCreateDBTestRunner"
+# Even when ALLOW_UI_DB_TESTS=1, keep using the live container DB without creating a test DB.
+# We intentionally DO NOT switch to DiscoverRunner and DO NOT remove DATABASES['default']['TEST'].
+# Allow pytest-django tests to access the DB by marking them with @pytest.mark.django_db, but they
+# will run against the mirrored default database (mythras_eg).
+if os.environ.get("ALLOW_UI_DB_TESTS") == "1":
+    # Speed up by creating tables directly from models for the enemygen app when Django evaluates migrations.
+    # This does not trigger DB creation since we keep the TEST mirror to the live DB.
+    MIGRATION_MODULES = {"enemygen": None}
 
 # Define a writable temp directory for HTML/PDF/PNG generation (required by views_lib and ajax)
 

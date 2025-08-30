@@ -17,20 +17,14 @@ import random
 import datetime
 import json
 # WeasyPrint import (separate from PIL so PIL failure won't mask WeasyPrint availability)
+WEASY_AVAILABLE = True
+WEASY_IMPORT_ERROR = None
 try:
     from weasyprint import HTML, CSS, default_url_fetcher
-except Exception as _we_ex:
-    HTML = None
-    CSS = None
-    default_url_fetcher = None
-    try:
-        import sys, traceback
-        print('[weasy] Import failure at module load:', type(_we_ex).__name__, str(_we_ex))
-        print('[weasy] sys.executable =', sys.executable)
-        print('[weasy] sys.path (first 5) =', sys.path[:5])
-        print('[weasy] traceback:\n', traceback.format_exc())
-    except Exception:
-        pass
+except Exception as e:
+    WEASY_AVAILABLE = False
+    WEASY_IMPORT_ERROR = e
+
 
 # PIL import (independent of WeasyPrint)
 try:
@@ -576,3 +570,13 @@ def _trim(image_path):
     bbox = diff.getbbox()
     im = im.crop(bbox)
     im.save(image_path)
+
+def render_pdf(html_str, base_url=None):
+    """
+    Render HTML -> PDF bytes using WeasyPrint, if available.
+    If not available, raise a clear 503-style error or return None.
+    """
+    if not WEASY_AVAILABLE:
+        # Option A: raise, Option B: return None, Option C: fallback to HTML
+        raise RuntimeError(f"WeasyPrint unavailable: {WEASY_IMPORT_ERROR}")
+    return HTML(string=html_str, base_url=base_url).write_pdf()
