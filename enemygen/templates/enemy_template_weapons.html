@@ -12,12 +12,19 @@ input.new_weapon[type=number]::-webkit-inner-spin-button {
 input.new_weapon[type=number] { -moz-appearance: textfield; }
 </style>
 
-<h3 class="h1">Combat styles</h3>
-{% for cs in combat_styles %}
-<input id="combat_style_name_{{cs.id}}" class="data form-control form-control-sm d-inline-block" style="width: 240px;" type="text" size="30" item_id="{{cs.id}}" item_type="et_combat_style_name" value="{{ cs.name }}" />
-<input id="combat_style_value_{{cs.id}}" class="data form-control form-control-sm d-inline-block ms-2" style="width: 140px;" type="text" item_id="{{cs.id}}" item_type="et_combat_style_value" value="{{ cs.die_set }}" />
-
 <div class="card shadow-sm mt-3 mb-3">
+  <div class="card-header py-2">
+    <h3 class="h1 mb-0">Combat styles</h3>
+  </div>
+  {% for cs in combat_styles %}
+  <div class="card-body pb-1">
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <input id="combat_style_name_{{cs.id}}" class="data form-control form-control-sm" style="width: 240px;" type="text" size="30" item_id="{{cs.id}}" item_type="et_combat_style_name" value="{{ cs.name }}" />
+      <input id="combat_style_value_{{cs.id}}" class="data form-control form-control-sm" style="width: 140px;" type="text" item_id="{{cs.id}}" item_type="et_combat_style_value" value="{{ cs.die_set }}" />
+    </div>
+  </div>
+
+  <div class="card shadow-sm mt-3 mb-3">
   <div class="card-body p-3">
     <h3 class="h1 mb-2">Weapon options</h3>
 
@@ -363,3 +370,4 @@ input.new_weapon[type=number] { -moz-appearance: textfield; }
   </div>
 </div>
 {% endfor %}
+</div>
