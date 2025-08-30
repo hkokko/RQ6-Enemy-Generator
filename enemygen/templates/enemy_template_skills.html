@@ -1,7 +1,7 @@
 <!-- Apply skill bonus -->
 <div class="card shadow-sm mb-3">
   <div class="card-body p-3">
-    <h3 class="h6 card-title">Apply skill bonus</h3>
+    <h3 class="h1 card-title">Apply skill bonus</h3>
     <p class="text-muted mb-2">Applies a bonus to all skills</p>
     <form action="{% url 'apply_skill_bonus' et.id %}" method="post" class="d-flex gap-2 align-items-center flex-wrap">
       {% csrf_token %}
@@ -15,7 +15,7 @@
 <!-- Standard skills -->
 <div class="card shadow-sm mb-3">
   <div class="card-body p-3">
-    <h3 class="h6 card-title">Standard skills</h3>
+    <h3 class="h1 card-title">Standard skills</h3>
     <div class="row g-2">
       {% for skill in et.standard_skills %}
       <div class="col-12 col-md-6 col-xl-4">
@@ -35,7 +35,7 @@
 {% if et.magic_skills %}
 <div class="card shadow-sm mb-3">
   <div class="card-body p-3">
-    <h3 class="h6 card-title">Magic skills</h3>
+    <h3 class="h1 card-title">Magic skills</h3>
     <div class="row g-2">
       {% for skill in et.magic_skills %}
       <div class="col-12 col-md-6 col-xl-4">
@@ -57,7 +57,7 @@
 <div class="card shadow-sm mb-3">
   <div class="card-body p-3">
     <div id="toggle_pro_skills" style="cursor: pointer;">
-      <h3 class="h6 card-title d-inline">Professional skills</h3>
+      <h3 class="h1 card-title d-inline">Professional skills</h3>
       <span class="text-muted small">Click to show/hide</span>
     </div>
     <div id="professional_skills_table" class="row g-2" {% if not et.included_professional_skills %}style="display: None;"{% endif %}>
@@ -80,7 +80,7 @@
 {% if et.custom_skills %}
 <div class="card shadow-sm mb-3">
   <div class="card-body p-3">
-    <h3 class="h6 card-title">Custom skills</h3>
+    <h3 class="h1 card-title">Custom skills</h3>
     <div class="row g-2">
       {% for skill in et.custom_skills %}
       <div class="col-12">
