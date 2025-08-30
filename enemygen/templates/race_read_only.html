@@ -1,58 +1,100 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if user.username %}
-<div id="clone_race_container">
-<form action="{% url 'clone_race' race.id %}" method="post">
-{% csrf_token %}
-<input id="clone_race" type="submit" value="Clone" />
-</form>
+
+<!-- Actions -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body d-flex flex-wrap gap-2">
+    {% if user.username %}
+    <form action="{% url 'clone_race' race.id %}" method="post" class="me-2">
+      {% csrf_token %}
+      <button id="clone_race" type="submit" class="btn btn-outline-secondary btn-sm">Clone</button>
+    </form>
+    {% endif %}
+  </div>
 </div>
-{% endif %}
 
-<h3>Race</h3>
-<table>
-    <tr><th>Name</th><td>{{ race.name }}</td></tr>
-    <tr><th>Movement</th><td>{{race.movement}}</td></tr>
-    {% if race.discorporate %}<tr><th>Discorporate</th><td>Yes</td></tr>{% endif %}
-    <tr><th>Notes</th><td>{{ race.special }}</td></tr>
-</table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h5 card-title">Race</h3>
+  <div class="row g-3 align-items-start">
+    <div class="col-12 col-md-6">
+      <label class="form-label mb-0">Name</label>
+      <div class="form-control-plaintext">{{ race.name }}</div>
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label mb-0">Movement</label>
+      <div class="form-control-plaintext">{{race.movement}}</div>
+    </div>
+    {% if race.discorporate %}
+    <div class="col-12 col-md-6">
+      <label class="form-label mb-0">Discorporate</label>
+      <div><span class="badge bg-success">Yes</span></div>
+    </div>
+    {% endif %}
+    <div class="col-12">
+      <label class="form-label mb-0">Notes</label>
+      <div class="border rounded p-2 bg-light">{{ race.special }}</div>
+    </div>
+  </div>
+</div></div>
 
-<h3>Stats</h3>
-<table>
-<tr><th>Stat</th><th>Value</th></tr>
-{% for stat in race.stats %}
-    <tr>
-        <td>{{ stat.name }}</td>
-        <td>{{ stat.default_value }}</td>
-    </tr>
-{% endfor %}
-</table>
+<div class="row g-3">
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm mb-3 h-100"><div class="card-body p-3">
+      <h3 class="h6 card-title">Stats</h3>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>Stat</th><th>Value</th></tr></thead>
+          <tbody>
+          {% for stat in race.stats %}
+            <tr>
+              <td style="width:50%">{{ stat.name }}</td>
+              <td>{{ stat.default_value }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
 
-<h3>Hit locations</h3>
-<table>
-<tr><th>Range start</th><th>Range end</th><th>Name</th><th>Armor</th><th>HP Modifier</th><th></th></tr>
-{% for hl in race.hit_locations %}
-    <tr>
-        <td>{{ hl.range_start }}</td>
-        <td>{{ hl.range_end }}</td>
-        <td>{{ hl.name }}</td>
-        <td>{{ hl.armor }}</td>
-        <td>{{ hl.hp_modifier }}</td>
-    </tr>
-{% endfor %}
-</table>
+  <div class="col-12 col-lg-6">
+    <div class="card shadow-sm mb-3 h-100"><div class="card-body p-3">
+      <h3 class="h6 card-title">Hit locations</h3>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>Range start</th><th>Range end</th><th>Name</th><th>Armor</th><th>HP Modifier</th></tr></thead>
+          <tbody>
+          {% for hl in race.hit_locations %}
+            <tr>
+              <td>{{ hl.range_start }}</td>
+              <td>{{ hl.range_end }}</td>
+              <td>{{ hl.name }}</td>
+              <td>{{ hl.armor }}</td>
+              <td>{{ hl.hp_modifier }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
+</div>
 
-<h3>Templates</h3>
+<h3 class="h5">Templates</h3>
 {% if race.templates %}
-<table>
-<tr><th>Name</th><th>Creator</th></tr>
-{% for et in race.templates %}
-<tr><td><a href="{% url 'enemy_template' et.id %}">{{et.name}}</a></td><td>{{et.owner}}</td></tr>
-{% endfor %}
+<div class="table-responsive">
+<table class="table table-sm align-middle">
+  <thead><tr><th>Name</th><th>Creator</th></tr></thead>
+  <tbody>
+  {% for et in race.templates %}
+    <tr><td><a href="{% url 'enemy_template' et.id %}">{{et.name}}</a></td><td>{{et.owner}}</td></tr>
+  {% endfor %}
+  </tbody>
 </table>
+</div>
 {% else %}
-<p>None</p>
+<p class="text-muted">None</p>
 {% endif %}
 
 {% endblock %}

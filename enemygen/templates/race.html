@@ -1,72 +1,111 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<h3>Race</h3>
-<table><tr>
-    <th>Name</th>
-    <td><input id="race" class="data" type="text" item_id="{{ race.id }}" item_type="race_name" value="{{ race.name }}" /></td>
-</tr><tr>
-    <th>Movement</th>
-    <td><input id="race_movement" class="data" type="text" size="8" item_id="{{ race.id }}" item_type="race_movement" value="{{race.movement}}" /></td>
-</tr><tr>
-    <th>Published</th>
-    <td><input id="race_pub" class="data" type="checkbox" item_id="{{ race.id }}" item_type="race_published" {% if race.published %}checked="checked"{% endif %} /></td>
-</tr><tr>
-    <th>Notes</th>
-    <td><textarea id="race_notes" class="data" cols="60" rows="3" item_id="{{ race.id }}" item_type="race_notes">{{ race.special }}</textarea></td>
-</tr><tr>
-    <th></th>
-    <td><button id="apply_notes_to_templates" item_id="{{ race.id }}">Copy notes to templates</button></td>
-</tr></table>
+<style>
+/* Hide spinners on number inputs within race page */
+#main_content input[type=number]::-webkit-outer-spin-button,
+#main_content input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#main_content input[type=number] { -moz-appearance: textfield; }
+</style>
 
-<div id="apply_notes_to_templates_confirmation">Notes copied successfully.</div>
-
-<div id="clone_race_container">
-<form action="{% url 'clone_race' race.id %}" method="post">
-{% csrf_token %}
-<input id="clone_race" type="submit" value="Clone" />
-</form>
+<!-- Actions -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body d-flex flex-wrap gap-2">
+    <form action="{% url 'clone_race' race.id %}" method="post" class="me-2">
+      {% csrf_token %}
+      <button id="clone_race" type="submit" class="btn btn-outline-secondary btn-sm">Clone</button>
+    </form>
+    <div class="ms-auto">
+      <button id="apply_notes_to_templates" item_id="{{ race.id }}" class="btn btn-primary btn-sm">Copy notes to templates</button>
+    </div>
+  </div>
 </div>
 
-<h3>Stats</h3>
-<table>
-<tr><th>Stat</th><th>Value</th></tr>
-{% for stat in race.stats %}
-    <tr>
-        <td>{{ stat.name }}</td>
-        <td>
-            <input id="race_stat_{{stat.id}}" class="data" type="text" size="6" item_id="{{stat.id}}" item_type="race_stat_value" value="{{ stat.default_value }}" />
-        </td>
-    </tr>
-{% endfor %}
-</table>
+<!-- Race details -->
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h5 card-title">Race</h3>
+  <div class="row g-3 align-items-center mb-2">
+    <div class="col-12 col-md-3"><label for="race" class="form-label mb-0">Name</label></div>
+    <div class="col-12 col-md-9"><input id="race" class="data form-control" type="text" item_id="{{ race.id }}" item_type="race_name" value="{{ race.name }}" /></div>
+  </div>
+  <div class="row g-3 align-items-center mb-2">
+    <div class="col-12 col-md-3"><label for="race_movement" class="form-label mb-0">Movement</label></div>
+    <div class="col-12 col-md-9"><input id="race_movement" class="data form-control form-control-sm w-auto" type="text" size="8" item_id="{{ race.id }}" item_type="race_movement" value="{{race.movement}}" /></div>
+  </div>
+  <div class="row g-3 align-items-center mb-2">
+    <div class="col-12 col-md-3"><label for="race_pub" class="form-label mb-0">Published</label></div>
+    <div class="col-12 col-md-9">
+      <div class="form-check">
+        <input id="race_pub" class="data form-check-input" type="checkbox" item_id="{{ race.id }}" item_type="race_published" {% if race.published %}checked="checked"{% endif %} />
+        <label class="form-check-label" for="race_pub">Published</label>
+      </div>
+    </div>
+  </div>
+  <div class="row g-3 align-items-start">
+    <div class="col-12 col-md-3"><label for="race_notes" class="form-label mb-0">Notes</label></div>
+    <div class="col-12 col-md-9"><textarea id="race_notes" class="data form-control" cols="60" rows="3" item_id="{{ race.id }}" item_type="race_notes">{{ race.special }}</textarea></div>
+  </div>
+</div></div>
 
-<h3>Hit locations</h3>
-<table>
-<tr><th>Range start</th><th>Range end</th><th>Name</th><th>Armor</th><th>HP Modifier</th><th></th></tr>
-{% for hl in race.hit_locations %}
-    <tr>
-        <td><input id="hl_rs_{{hl.id}}" class="data" type="number" size="2" min="1" max="20" item_id="{{hl.id}}" item_type="race_hl_range_start" value="{{ hl.range_start }}" /></td>
-        <td><input id="hl_re_{{hl.id}}" class="data" type="number" size="2" min="1" max="20" item_id="{{hl.id}}" item_type="race_hl_range_end" value="{{ hl.range_end }}" /></td>
-        <td><input id="hl_name_{{hl.id}}" class="data" type="text" size="10" item_id="{{hl.id}}" item_type="race_hl_name" value="{{ hl.name }}" /></td>
-        <td><input id="hl_armor_{{hl.id}}" class="data" type="text" size="3" item_id="{{hl.id}}" item_type="race_hl_armor" value="{{ hl.armor }}" /></td>
-        <td><input id="hl_hp_mod_{{hl.id}}" class="data" type="text" size="10" item_id="{{hl.id}}" item_type="race_hl_hp_modifier" value="{{ hl.hp_modifier }}" /></td>
-        <td><img src="{% static 'minus.png' %}" width="23" height="23" class="del_item" item_id="{{ hl.id }}" item_type="hit_location" /></td>
-    </tr>
-{% endfor %}
-</table>
-<button id="add_hit_location" race_id="{{ race.id }}">Add Hit Location</button>
+<div id="apply_notes_to_templates_confirmation" class="alert alert-success d-none" role="alert">Notes copied successfully.</div>
 
-<h3>Templates</h3>
+<!-- Stats -->
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Stats</h3>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Stat</th><th>Value</th></tr></thead>
+      <tbody>
+      {% for stat in race.stats %}
+        <tr>
+          <td style="width:50%">{{ stat.name }}</td>
+          <td style="max-width:10rem;"><input id="race_stat_{{stat.id}}" class="data form-control form-control-sm" type="text" size="6" item_id="{{stat.id}}" item_type="race_stat_value" value="{{ stat.default_value }}" /></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div></div>
+
+<!-- Hit locations -->
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Hit locations</h3>
+  <div class="table-responsive mb-2">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Range start</th><th>Range end</th><th>Name</th><th>Armor</th><th>HP Modifier</th><th></th></tr></thead>
+      <tbody>
+      {% for hl in race.hit_locations %}
+        <tr>
+          <td style="max-width:6rem;"><input id="hl_rs_{{hl.id}}" class="data form-control form-control-sm" type="number" min="1" max="20" item_id="{{hl.id}}" item_type="race_hl_range_start" value="{{ hl.range_start }}" /></td>
+          <td style="max-width:6rem;"><input id="hl_re_{{hl.id}}" class="data form-control form-control-sm" type="number" min="1" max="20" item_id="{{hl.id}}" item_type="race_hl_range_end" value="{{ hl.range_end }}" /></td>
+          <td style="min-width:12rem;"><input id="hl_name_{{hl.id}}" class="data form-control form-control-sm" type="text" item_id="{{hl.id}}" item_type="race_hl_name" value="{{ hl.name }}" /></td>
+          <td style="max-width:8rem;"><input id="hl_armor_{{hl.id}}" class="data form-control form-control-sm" type="text" item_id="{{hl.id}}" item_type="race_hl_armor" value="{{ hl.armor }}" /></td>
+          <td style="max-width:12rem;"><input id="hl_hp_mod_{{hl.id}}" class="data form-control form-control-sm" type="text" item_id="{{hl.id}}" item_type="race_hl_hp_modifier" value="{{ hl.hp_modifier }}" /></td>
+          <td class="text-end"><img src="{% static 'minus.png' %}" width="23" height="23" class="del_item" item_id="{{ hl.id }}" item_type="hit_location" /></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <button id="add_hit_location" race_id="{{ race.id }}" class="btn btn-primary btn-sm">Add Hit Location</button>
+</div></div>
+
+<!-- Templates -->
+<h3 class="h5">Templates</h3>
 {% if race.templates %}
-<table>
-<tr><th>Name</th><th>Creator</th></tr>
-{% for et in race.templates %}
-<tr><td><a href="{% url 'enemy_template' et.id %}">{{et.name}}</a></td><td>{{et.owner}}</td></tr>
-{% endfor %}
+<div class="table-responsive">
+<table class="table table-sm align-middle">
+  <thead><tr><th>Name</th><th>Creator</th></tr></thead>
+  <tbody>
+  {% for et in race.templates %}
+    <tr><td><a href="{% url 'enemy_template' et.id %}">{{et.name}}</a></td><td>{{et.owner}}</td></tr>
+  {% endfor %}
+  </tbody>
 </table>
+</div>
 {% else %}
-<p>None</p>
+<p class="text-muted">None</p>
 {% endif %}
 
 {% endblock %}
