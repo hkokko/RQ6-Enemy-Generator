@@ -1,7 +1,11 @@
 <html>
 <body>
 {% for path in png_paths %}
-    <img src="{{path}}" /><br>
+    {% if path|lower|slice:"-4:" == ".png" %}
+        <img src="{{path}}" /><br>
+    {% else %}
+        <a href="{{path}}">Download {{ path }}</a><br>
+    {% endif %}
 {% endfor %}
 </body>
 </html>

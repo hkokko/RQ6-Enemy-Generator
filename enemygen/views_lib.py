@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.db.models import Q, Sum
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 from bs4 import BeautifulSoup
 from tempfile import NamedTemporaryFile
@@ -15,10 +16,28 @@ import os
 import random
 import datetime
 import json
+# WeasyPrint import (separate from PIL so PIL failure won't mask WeasyPrint availability)
 try:
-    from weasyprint import HTML, CSS
+    from weasyprint import HTML, CSS, default_url_fetcher
+except Exception as _we_ex:
+    HTML = None
+    CSS = None
+    default_url_fetcher = None
+    try:
+        import sys, traceback
+        print('[weasy] Import failure at module load:', type(_we_ex).__name__, str(_we_ex))
+        print('[weasy] sys.executable =', sys.executable)
+        print('[weasy] sys.path (first 5) =', sys.path[:5])
+        print('[weasy] traceback:\n', traceback.format_exc())
+    except Exception:
+        pass
+
+# PIL import (independent of WeasyPrint)
+try:
     from PIL import Image, ImageChops
-except:
+except Exception:
+    Image = None
+    ImageChops = None
     pass
 
 def get_filter(request):
@@ -312,31 +331,182 @@ def _get_html_prefix(context):
     return prefix.replace(' ', '_').replace("'", '').replace('"', '')
 
 
+def _ensure_weasyprint(where: str = '') -> bool:
+    """Attempt to import WeasyPrint lazily. Returns True if available, else logs details and returns False."""
+    global HTML, CSS, default_url_fetcher
+    if HTML is not None and CSS is not None:
+        return True
+    try:
+        from weasyprint import HTML as _HTML, CSS as _CSS, default_url_fetcher as _fetcher
+        import weasyprint as _wp
+        HTML, CSS, default_url_fetcher = _HTML, _CSS, _fetcher
+        print(f"[weasy] Loaded WeasyPrint in {where}; version={getattr(_wp, '__version__', 'unknown')}")
+        return True
+    except Exception as e:
+        try:
+            import sys, traceback
+            print(f"[weasy] ERROR importing WeasyPrint in {where}: {type(e).__name__}: {e}")
+            print('[weasy] sys.executable =', sys.executable)
+            print('[weasy] sys.path (first 5) =', sys.path[:5])
+            print('[weasy] traceback:\n', traceback.format_exc())
+        except Exception:
+            pass
+        return False
+
+
 def generate_pdf(html_path):
     """ Generates a PDF based on the given html file """
+    if not _ensure_weasyprint('generate_pdf'):
+        # We cannot render PDF without WeasyPrint; return the expected output path and let caller decide.
+        print('[generate_pdf] WARNING: WeasyPrint not available. Skipping PDF render.')
+        html_full = os.path.join(settings.TEMP, html_path)
+        return html_full.replace('.html', '.pdf')
     html_path = os.path.join(settings.TEMP, html_path)
     pdf_path = html_path.replace('.html', '.pdf')
-    HTML(html_path).write_pdf(pdf_path)
+    HTML(html_path, base_url=os.path.dirname(html_path) or None, url_fetcher=_safe_url_fetcher()).write_pdf(pdf_path)
     return pdf_path
+
+
+def _safe_url_fetcher():
+    def fetch(url):
+        try:
+            if url is None:
+                return {"string": b"", "mime_type": None}
+            low = str(url)
+            if low.startswith('about:'):
+                # Ignore about:blank and similar
+                return {"string": b"", "mime_type": None, "redirected_url": url}
+            if low.startswith('data:'):
+                # Let default handle data URIs if available
+                if default_url_fetcher:
+                    return default_url_fetcher(url)
+                return {"string": b"", "mime_type": None, "redirected_url": url}
+            # Delegate all others
+            if default_url_fetcher:
+                return default_url_fetcher(url)
+            return {"string": b"", "mime_type": None, "redirected_url": url}
+        except Exception:
+            return {"string": b"", "mime_type": None, "redirected_url": url}
+    return fetch
 
 
 def generate_pngs(html_path):
     """ Generates png-images out of the generated_html """
-    with open(os.path.join(settings.TEMP, html_path).encode('utf-8'), 'r') as ff:
+    if not _ensure_weasyprint('generate_pngs'):
+        # Graceful degradation: if WeasyPrint isn't available, we cannot render HTML directly.
+        # As a fallback, just return an empty list so the endpoint renders an empty page instead of 500.
+        print('[generate_pngs] WARNING: WeasyPrint not available. Returning no PNGs (install weasyprint + cairo/pango for PNG export).')
+        return []
+    temp_dir = getattr(settings, 'TEMP', None)
+    print('[generate_pngs] settings.TEMP =', temp_dir)
+    # Log WeasyPrint version and feature availability once per call
+    try:
+        import weasyprint as _wp
+        ver = getattr(_wp, '__version__', 'unknown')
+    except Exception:
+        ver = 'unknown'
+    has_page_write_png = False
+    # Note: We avoid instantiating HTML('about:blank') to prevent URL fetch issues.
+    print(f"[generate_pngs] WeasyPrint version={ver}")
+    target_html = os.path.join(settings.TEMP, html_path)
+    print('[generate_pngs] input html_path =', target_html)
+    with open(target_html.encode('utf-8'), 'r') as ff:
         soup = BeautifulSoup(ff, 'html.parser')
     enemies = soup.find_all('div', {'class': 'enemy_container'})
     container = soup.find('div', {'id': 'enemies'})
+    print('[generate_pngs] enemies found =', len(enemies))
     pngs = []
-    for enemy in enemies:
+    for idx, enemy in enumerate(enemies, start=1):
         container.clear()
         container.append(enemy)
         htmlfile = NamedTemporaryFile(mode='w', suffix='.html', dir=settings.TEMP, delete=False)
         htmlfile.write(soup.prettify())
         htmlfile.close()
+        print(f"[generate_pngs] temp HTML #{idx} = {htmlfile.name}")
         png_name = htmlfile.name.replace('.html', '.png')
-        HTML(htmlfile.name).write_png(png_name, stylesheets=[CSS(string='@media print{body, td, th{font-size: 11px !important;}}')])
-        _trim(png_name)
-        pngs.append(png_name)
+        # Render HTML and write PNG if supported; otherwise PDF fallback with possible rasterization
+        try:
+            # Provide base_url to resolve relative resources and a safe url_fetcher
+            base_url = os.path.dirname(htmlfile.name) or None
+            document = HTML(htmlfile.name, base_url=base_url, url_fetcher=_safe_url_fetcher()).render(stylesheets=[CSS(string='@media print{body, td, th{font-size: 11px !important;}}')])
+            if not getattr(document, 'pages', None):
+                raise AttributeError('WeasyPrint failed to render pages for PNG export')
+            page = document.pages[0]
+            # 52.x: PNG support is on Document/HTML, not on Page
+            if hasattr(document, 'write_png'):
+                # writes a PNG of the first page
+                document.write_png(png_name)
+                print('[generate_pngs] wrote PNG via Document.write_png ->', png_name)
+            else:
+                # 53+: PNG removed – use PDF + rasterize fallback
+                pdf_name = htmlfile.name.replace('.html', '.pdf')
+                document.write_pdf(pdf_name)
+                print('[generate_pngs] PNG API missing; wrote PDF fallback ->', pdf_name)
+                try:
+                    import fitz  # PyMuPDF
+                    doc = fitz.open(pdf_name)
+                    page0 = doc.load_page(0)
+                    pix = page0.get_pixmap(dpi=192)
+                    pix.save(png_name)
+                    doc.close()
+                    print('[generate_pngs] rasterized PDF to PNG via PyMuPDF ->', png_name)
+                except Exception as e:
+                    print('[generate_pngs] PyMuPDF rasterization failed:', e)
+                    png_name = pdf_name
+        except Exception as e:
+            print('[generate_pngs] Exception during render/write:', e)
+            # On hard failure, skip to next enemy
+            continue
+        # Verify existence; if not found, try glob by stem in TEMP
+        try:
+            exists = os.path.exists(png_name)
+            size = os.path.getsize(png_name) if exists else 'N/A'
+            print(f"[generate_pngs] output candidate = {png_name} exists={exists} size={size}")
+        except Exception:
+            exists = False
+        if not exists:
+            try:
+                import glob
+                stem = os.path.splitext(os.path.basename(png_name))[0]
+                pattern = os.path.join(settings.TEMP, f"{stem}.*")
+                matches = sorted(glob.glob(pattern))
+                print('[generate_pngs] glob search', pattern, '->', matches)
+                if matches:
+                    png_name = matches[0]
+                    exists = True
+            except Exception as e:
+                print('[generate_pngs] glob failed:', e)
+        if exists:
+            try:
+                # If not already under TEMP, copy into TEMP to ensure /temp/ can serve it
+                out_basename = os.path.basename(png_name)
+                out_abs = os.path.join(settings.TEMP, out_basename)
+                if os.path.abspath(png_name) != os.path.abspath(out_abs):
+                    try:
+                        import shutil
+                        shutil.copy2(png_name, out_abs)
+                        print('[generate_pngs] copied artifact into TEMP ->', out_abs)
+                        png_name = out_abs
+                    except Exception as e:
+                        print('[generate_pngs] copy into TEMP failed:', e)
+                # Optionally trim PNGs only
+                if png_name.lower().endswith('.png'):
+                    try:
+                        _trim(png_name)
+                        print('[generate_pngs] trimmed PNG ->', png_name)
+                    except Exception as e:
+                        print('[generate_pngs] trim failed (non-fatal):', e)
+                pngs.append(png_name)
+            except Exception as e:
+                print('[generate_pngs] append failed:', e)
+        else:
+            print('[generate_pngs] SKIP: artifact not found for enemy #', idx)
+    # Final TEMP listing sample
+    try:
+        entries = sorted(os.listdir(settings.TEMP))[:10]
+        print('[generate_pngs] TEMP content sample (first 10):', entries)
+    except Exception:
+        pass
     return pngs
 
 

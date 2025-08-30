@@ -2,7 +2,9 @@ from django.urls import re_path as url
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
+from django.urls import re_path
 
+from django.views.static import serve as static_serve
 
 from enemygen import views
 from enemygen import ajax
@@ -82,3 +84,11 @@ urlpatterns = [
     url('^' + ROOT + r'rest/add_custom_spell/(?P<et_id>\d+)/(?P<type>[\da-z_-]+)/$', ajax.add_custom_spell, name='add_custom_spell'),
     url('^' + ROOT + r'rest/apply_notes_to_templates/(?P<race_id>\d+)/$', ajax.apply_notes_to_templates, name='apply_notes_to_templates'),
 ]
+# Serve the temp directory in dev server
+
+if settings.DEBUG:
+    urlpatterns += [
+        re_path(r"^temp/(?P<path>.*)$",
+                static_serve,
+                {"document_root": str(settings.TEMP_URL_DOCUMENT_ROOT)}),
+    ]

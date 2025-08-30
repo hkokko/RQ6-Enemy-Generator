@@ -10,7 +10,29 @@ from enemygen.reg_views import MyRegistrationView
 
 admin.autodiscover()
 
-temp_path = static('/temp/', document_root=os.path.join(settings.PROJECT_ROOT, 'temp')) if settings.DEBUG else []
+# Serve /temp/ from settings.TEMP (where PNG/PDF artifacts are written). Fallback to PROJECT_ROOT/temp.
+temp_root = getattr(settings, 'TEMP', os.path.join(settings.PROJECT_ROOT, 'temp'))
+# Expose this value so views can reference the exact directory being served at /temp/
+setattr(settings, 'TEMP_URL_DOCUMENT_ROOT', temp_root)
+# Also expose the URL prefix used to serve temp files (default '/temp/')
+setattr(settings, 'TEMP_URL_PREFIX', getattr(settings, 'TEMP_URL_PREFIX', '/temp/'))
+# Debug: log the document_root used to serve /temp/
+try:
+    print('[urls] /temp/ document_root =', temp_root)
+    print('[urls] /temp/ url_prefix =', getattr(settings, 'TEMP_URL_PREFIX', '/temp/'))
+except Exception:
+    pass
+temp_path = static(getattr(settings, 'TEMP_URL_PREFIX', '/temp/'), document_root=temp_root)
+
+# DEV-ONLY: serve the temp files via Django
+# (Put this unconditionally while debugging; later you can guard with settings.DEBUG)
+
+urlpatterns += [
+    re_path(r"^temp/(?P<path>.*)$",
+            static_serve,
+            {"document_root": str(settings.TEMP_URL_DOCUMENT_ROOT)}),
+]
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/register/$', MyRegistrationView.as_view(), name='registration_register'),

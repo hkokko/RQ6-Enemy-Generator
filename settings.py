@@ -91,13 +91,13 @@ DATABASES = {
         "PASSWORD": _DB_PASSWORD,
         "HOST": os.environ.get("DB_HOST", "127.0.0.1"),
         "PORT": os.environ.get("DB_PORT", "3308"),
+        # Avoid Django attempting to create a separate test database; mirror the default
         "TEST": {
-            "NAME": DB_NAME
+            "MIRROR": "default",
+            "NAME": DB_NAME,
         },
     }
 }
-
-DATABASES["default"]["TEST"] = {"NAME": os.getenv("DB_NAME", "mythras_eg")}
 
 LOGGING = {
     "version": 1,
@@ -129,14 +129,23 @@ STATIC_ROOT = str(BASE_DIR / "static_root")
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
+# Use a custom test runner that does not create/drop databases. It only checks connectivity.
+TEST_RUNNER = "tests_no_db.NoCreateDBTestRunner"
+
 # Define a writable temp directory for HTML/PDF/PNG generation (required by views_lib and ajax)
-TEMP = str(BASE_DIR / "temp")
-# Ensure the directory exists to avoid runtime errors when writing temp files
-try:
-    os.makedirs(TEMP, exist_ok=True)
-except Exception:
-    # If directory creation fails (permissions, etc.), proceed; file ops may fail later with clearer errors
-    pass
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Directory where your code writes the PNGs
+TEMP = BASE_DIR / "temp"
+TEMP.mkdir(exist_ok=True)
+
+# Public URL prefix for those files
+TEMP_URL_PREFIX = "/temp/"
+
+# Directory to serve at /temp/
+TEMP_URL_DOCUMENT_ROOT = TEMP  # keep it identical to TEMP
 
 # Speed up tests by creating tables directly from models (no migrations for enemygen)
 #MIGRATION_MODULES = {"enemygen": None}
