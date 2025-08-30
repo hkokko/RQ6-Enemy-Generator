@@ -228,6 +228,12 @@ def combat_styles(et):
                   'ranged_amount': cs.ranged_amount, 'shield_amount': cs.shield_amount,
                   '1h_melee': [], '2h_melee': [], 'ranged': [], 'shield': [], 'customs': []}
         cs_out.update(weapons(cs))
+        # Provide alias keys without leading digit for templates
+        try:
+            cs_out['one_h_melee'] = cs_out.get('1h_melee', [])
+            cs_out['two_h_melee'] = cs_out.get('2h_melee', [])
+        except Exception:
+            pass
         # Append Custom weapons
         for tipe in ('1h-melee', '2h-melee', 'ranged', 'shield'):
             for cw in CustomWeapon.objects.filter(combat_style=cs, type=tipe):

@@ -11,200 +11,343 @@ input.new_weapon[type=number]::-webkit-inner-spin-button {
 .weapon_table input[type=number],
 input.new_weapon[type=number] { -moz-appearance: textfield; }
 </style>
-<h3 class="h5">Combat styles</h3>
+
+<h3 class="h1">Combat styles</h3>
 {% for cs in combat_styles %}
 <input id="combat_style_name_{{cs.id}}" class="data form-control form-control-sm d-inline-block" style="width: 240px;" type="text" size="30" item_id="{{cs.id}}" item_type="et_combat_style_name" value="{{ cs.name }}" />
 <input id="combat_style_value_{{cs.id}}" class="data form-control form-control-sm d-inline-block ms-2" style="width: 140px;" type="text" item_id="{{cs.id}}" item_type="et_combat_style_value" value="{{ cs.die_set }}" />
 
-<h3 class="h5 mt-3">Weapon options</h3>
-<div class="btn-group btn-group-sm mb-2" role="group" aria-label="Weapon filter">
-<button class="weapon_selector btn btn-outline-primary {% if et.weapon_filter == 'All' %}active{% endif %}" filter="All">All</button>
-<button class="weapon_selector btn btn-outline-primary {% if et.weapon_filter == 'Standard' or not et.weapon_filter %}active{% endif %}" filter="Standard">Standard</button>
-<button class="weapon_selector btn btn-outline-primary {% if et.weapon_filter == 'Mythic Britain' %}active{% endif %}" filter="Mythic Britain">Mythic Britain</button>
-<button class="weapon_selector btn btn-outline-primary {% if et.weapon_filter == 'Monster Island' %}active{% endif %}" filter="Monster Island">Monster Island</button>
-<button class="weapon_selector btn btn-outline-primary {% if et.weapon_filter == 'Eastern' %}active{% endif %}" filter="Eastern">Eastern</button>
-<button class="weapon_selector btn btn-outline-primary {% if et.weapon_filter == 'Glorantha' %}active{% endif %}" filter="Glorantha">Glorantha</button>
-</div>
+<div class="card shadow-sm mt-3 mb-3">
+  <div class="card-body p-3">
+    <h3 class="h1 mb-2">Weapon options</h3>
 
-<script>
-async function update_weapons(target){
-    const result = await axios.get('/rest/get_weapons/'+ {{cs.id}} +'/', {params: {'filter': target.attr('filter')}});
-    get_weapons_callback(result.data);
-};
-
-function get_weapons_callback(result){
-    var row, i, weapon;
-    if (result.success){
-        $('#1h_melee > tbody').html('');
-        $('#2h_melee > tbody').html('');
-        $('#shield > tbody').html('');
-        $('#ranged > tbody').html('');
-        for (i in result.weapons['1h_melee']){
-            weapon = result.weapons['1h_melee'][i]
-            row = '<tr><td>'+weapon.name+'</td><td style="max-width:8rem;"><input id="weapon_prob_'+weapon.id+'" class="new_weapon data number form-control form-control-sm" type="number" min="0" max="9999" parent_id="{{ cs.id }}" item_id="'+weapon.id+'" item_type="et_weapon_prob" value="'+weapon.probability+'" /></td></tr>'
-            $('#1h_melee').append(row);
-        }
-        for (i in result.weapons['2h_melee']){
-            weapon = result.weapons['2h_melee'][i]
-            row = '<tr><td>'+weapon.name+'</td><td style="max-width:8rem;"><input id="weapon_prob_'+weapon.id+'" class="new_weapon data number form-control form-control-sm" type="number" min="0" max="9999" parent_id="{{ cs.id }}" item_id="'+weapon.id+'" item_type="et_weapon_prob" value="'+weapon.probability+'" /></td></tr>'
-            $('#2h_melee').append(row);
-        }
-        for (var i in result.weapons.ranged){
-            weapon = result.weapons.ranged[i]
-            row = '<tr><td>'+weapon.name+'</td><td style="max-width:8rem;"><input id="weapon_prob_'+weapon.id+'" class="new_weapon data number form-control form-control-sm" type="number" min="0" max="9999" parent_id="{{ cs.id }}" item_id="'+weapon.id+'" item_type="et_weapon_prob" value="'+weapon.probability+'" /></td></tr>'
-            $('#ranged').append(row);
-        }
-        for (i in result.weapons['shield']){
-            weapon = result.weapons['shield'][i]
-            row = '<tr><td>'+weapon.name+'</td><td style="max-width:8rem;"><input id="weapon_prob_'+weapon.id+'" class="new_weapon data number form-control form-control-sm" type="number" min="0" max="9999" parent_id="{{ cs.id }}" item_id="'+weapon.id+'" item_type="et_weapon_prob" value="'+weapon.probability+'" /></td></tr>'
-            $('#shield').append(row);
-        }
-        $('.new_weapon:input[type=number]').blur(function(event){
-            bind_change_listeners(event);
-        });
-        $('.new_weapon:input[type=number]').change(function(event){
-            bind_change_listeners(event);
-        });
-        
-    }
-}
-
-$('.weapon_selector').click(function(event){
-    update_weapons($(event.target));
-    $('.weapon_selector').removeClass('active_button');
-    $(event.target).addClass('active_button');
-});
-</script>
-
-<table><tr>
-    <td valign="top">
-    <h4>1-handed weapons</h4>
-    Amount:
-    <input id="et_one_h_amount_{{ cs.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ cs.id }}" item_type="et_one_h_amount" value="{{ cs.one_h_amount }}" /><br>
-    <table id="1h_melee" class="weapon_table table table-sm align-middle">
-        <thead><tr><th>Weapon</th><th>Prob.</th></tr></thead>
-        {% for weapon in cs.1h_melee %}
-        <tr>
-            <td>{{ weapon.name }}</td>
-            <td style="max-width:8rem;"><input id="weapon_prob_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" parent_id="{{ cs.id }}" item_id="{{weapon.id}}" item_type="et_weapon_prob" value="{{ weapon.probability }}" /></td>
-        </tr>
-        {% endfor %}
-    </table>
-    </td>
-
-    <td valign="top">
-    <h4>2-handed weapons</h4>
-    Amount:
-    <input id="et_two_h_amount_{{ cs.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ cs.id }}" item_type="et_two_h_amount" value="{{ cs.two_h_amount }}" /><br>
-    <table id="2h_melee" class="weapon_table table table-sm align-middle">
-        <thead><tr><th>Weapon</th><th>Prob.</th></tr></thead>
-        {% for weapon in cs.2h_melee %}
-        <tr>
-            <td>{{ weapon.name }}</td>
-            <td style="max-width:8rem;"><input id="weapon_prob_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" parent_id="{{ cs.id }}" item_id="{{weapon.id}}" item_type="et_weapon_prob" value="{{ weapon.probability }}" /></td>
-        </tr>
-        {% endfor %}
-    </table>
-    </td>
-
-    <td valign="top">
-    <h4>Ranged weapons</h4>
-    Amount:
-    <input id="et_ranged_amount_{{ cs.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ cs.id }}" item_type="et_ranged_amount" value="{{ cs.ranged_amount }}" /><br>
-    <table id="ranged" class="weapon_table table table-sm align-middle">
-        <thead><tr><th>Weapon</th><th>Prob.</th></tr></thead>
-        {% for weapon in cs.ranged %}
-        <tr>
-            <td>{{ weapon.name }}</td>
-            <td style="max-width:8rem;"><input id="weapon_prob_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" parent_id="{{ cs.id }}" item_id="{{weapon.id}}" item_type="et_weapon_prob" value="{{ weapon.probability }}" /></td>
-        </tr>
-        {% endfor %}
-    </table>
-    </td>
-
-    <td valign="top">
-    <h4>Shields</h4>
-    Amount:
-    <input id="et_shield_amount_{{ cs.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ cs.id }}" item_type="et_shield_amount" value="{{ cs.shield_amount }}" /><br>
-    <table id="shield" class="weapon_table table table-sm align-middle">
-        <thead><tr><th>Weapon</th><th>Prob.</th></tr></thead>
-        {% for weapon in cs.shield %}
-        <tr>
-            <td>{{ weapon.name }}</td>
-            <td style="max-width:8rem;"><input id="weapon_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" parent_id="{{ cs.id }}" item_id="{{weapon.id}}" item_type="et_weapon_prob" value="{{ weapon.probability }}" /></td>
-        </tr>
-        {% endfor %}
-    </table>
-    </td>
-    
-    </tr><tr><td colspan="4">
-    {% if cs.customs %}
-    <h4>Custom weapons</h4>
-    <div class="table-responsive">
-    <table class="table table-sm align-middle">
-    <tr valign="bottom">
-        <th>Name</th>
-        <th>Type</th>
-        <th>Damage</th>
-        <th>Size</th>
-        <th>Reach</th>
-        <th>Range</th>
-        <th>SpecialFX</th>
-        <th>Dam.<br>mod.</th>
-        <th>Natural<br>weapon</th>
-        <th>AP</th>
-        <th>HP</th>
-        <th>Prob.</th><th></th>
-    </tr>
-    {% for weapon in cs.customs %}
-    <tr>
-        <td style="min-width:200px;"><input id="custom_weapon_name_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_name" value="{{ weapon.name }}" /></td>
-        <td>
-            <select id="custom_weapon_type_{{weapon.id}}" class="data form-select form-select-sm" item_id="{{ weapon.id }}" item_type="et_custom_weapon_type">
-                <option value="1h-melee" {% if weapon.type == '1h-melee' %}selected="selected"{% endif %}>1-handed</option>
-                <option value="2h-melee" {% if weapon.type == '2h-melee' %}selected="selected"{% endif %}>2-handed</option>
-                <option value="ranged" {% if weapon.type == 'ranged' %}selected="selected"{% endif %}>Ranged</option>
-                <option value="shield" {% if weapon.type == 'shield' %}selected="selected"{% endif %}>Shield</option>
-            </select>
-        </td>
-        <td style="max-width:8rem;"><input id="custom_weapon_damage_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_damage" value="{{weapon.damage}}"></td>
-        <td>
-            <select id="custom_weapon_size_{{weapon.id}}" class="data form-select form-select-sm" item_id="{{ weapon.id }}" item_type="et_custom_weapon_size">
-                <option value="-" {% if weapon.size == '-' %}selected="selected"{% endif %}>-</option>
-                <option value="S" {% if weapon.size == 'S' %}selected="selected"{% endif %}>S</option>
-                <option value="M" {% if weapon.size == 'M' %}selected="selected"{% endif %}>M</option>
-                <option value="L" {% if weapon.size == 'L' %}selected="selected"{% endif %}>L</option>
-                <option value="H" {% if weapon.size == 'H' %}selected="selected"{% endif %}>H</option>
-                <option value="E" {% if weapon.size == 'E' %}selected="selected"{% endif %}>E</option>
-                <option value="C" {% if weapon.size == 'C' %}selected="selected"{% endif %}>C</option>
-            </select>
-        </td>
-        <td>
-            <select id="custom_weapon_reach_{{weapon.id}}" class="data form-select form-select-sm" item_id="{{ weapon.id }}" item_type="et_custom_weapon_reach">
-                <option value="-" {% if weapon.reach == '-' %}selected="selected"{% endif %}>-</option>
-                <option value="T" {% if weapon.reach == 'T' %}selected="selected"{% endif %}>T</option>
-                <option value="S" {% if weapon.reach == 'S' %}selected="selected"{% endif %}>S</option>
-                <option value="M" {% if weapon.reach == 'M' %}selected="selected"{% endif %}>M</option>
-                <option value="L" {% if weapon.reach == 'L' %}selected="selected"{% endif %}>L</option>
-                <option value="VL" {% if weapon.reach == 'VL' %}selected="selected"{% endif %}>VL</option>
-            </select>
-        </td>
-        <td style="max-width:10rem;"><input id="custom_weapon_range_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_range" value="{{weapon.range}}"></td>
-        <td style="max-width:12rem;"><input id="custom_weapon_special_effects_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_special_effects" value="{{weapon.special_effects}}"></td>
-        <td><input id="custom_weapon_dammod_{{weapon.id}}" class="data" type="checkbox" item_id="{{weapon.id}}" item_type="et_custom_weapon_damage_modifier" {% if weapon.damage_modifier %}checked="checked"{% endif %}></td>
-        <td><input id="custom_weapon_natweap_{{weapon.id}}" class="data natural_weapon" type="checkbox" item_id="{{weapon.id}}" item_type="et_custom_weapon_natural_weapon" {% if weapon.natural_weapon %}checked="checked"{% endif %}></td>
-        <td class="ap_hp"{% if weapon.natural_weapon %}style="display: none;"{% endif %}><input id="custom_weapon_ap_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="100" item_id="{{weapon.id}}" item_type="et_custom_weapon_ap" value="{{weapon.ap}}"></td>
-        <td class="ap_hp" {% if weapon.natural_weapon %}style="display: none;"{% endif %}><input id="custom_weapon_hp_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="100" item_id="{{weapon.id}}" item_type="et_custom_weapon_hp" value="{{weapon.hp}}"></td>
-        <td class="ap_hp" colspan="2" {% if not weapon.natural_weapon %}style="display: none;"{% endif %}><input id="custom_weapon_ap_hp_as_per_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_ap_hp_as_per" value="{{ weapon.ap_hp_as_per }}" /></td>
-        <td style="max-width:8rem;"><input id="custom_weapon_prob_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" item_id="{{weapon.id}}" item_type="et_custom_weapon_prob" value="{{ weapon.probability }}" /></td>
-        <td><img src="{% static 'minus.png' %}" width="23" height="23" class="del_item" item_id="{{ weapon.id }}" item_type="custom_weapon"/></td>
-    </tr>
-    {% endfor %}
-    </table>
+    <div class="d-flex flex-wrap gap-2 justify-content-between mb-2" role="group" aria-label="Weapon filter">
+      <button class="weapon_selector btn btn-outline-primary flex-fill text-center {% if et.weapon_filter == 'All' %}active{% endif %}" filter="All">All</button>
+      <button class="weapon_selector btn btn-outline-primary flex-fill text-center {% if et.weapon_filter == 'Standard' or not et.weapon_filter %}active{% endif %}" filter="Standard">Standard</button>
+      <button class="weapon_selector btn btn-outline-primary flex-fill text-center {% if et.weapon_filter == 'Mythic Britain' %}active{% endif %}" filter="Mythic Britain">Mythic Britain</button>
+      <button class="weapon_selector btn btn-outline-primary flex-fill text-center {% if et.weapon_filter == 'Monster Island' %}active{% endif %}" filter="Monster Island">Monster Island</button>
+      <button class="weapon_selector btn btn-outline-primary flex-fill text-center {% if et.weapon_filter == 'Eastern' %}active{% endif %}" filter="Eastern">Eastern</button>
+      <button class="weapon_selector btn btn-outline-primary flex-fill text-center {% if et.weapon_filter == 'Glorantha' %}active{% endif %}" filter="Glorantha">Glorantha</button>
     </div>
-    {% endif %}
-    <button class="add_custom_weapon btn btn-primary btn-sm" cs_id="{{ cs.id }}" type="1h-melee">Add custom weapon</button>
-    </td>
-    
-</tr></table>
+
+    <script>
+    async function update_weapons(target){
+      const result = await axios.get('/rest/get_weapons/'+ {{cs.id}} +'/', {params: {'filter': target.attr('filter')}});
+      get_weapons_callback(result.data);
+    };
+
+    function get_weapons_callback(result){
+      if (!result.success) return;
+
+      // clear all bodies
+      $('#1h_melee > tbody').empty();
+      $('#2h_melee > tbody').empty();
+      $('#shield > tbody').empty();
+      $('#ranged > tbody').empty();
+
+      // 1H melee
+      for (let i in result.weapons['1h_melee']){
+        const weapon = result.weapons['1h_melee'][i];
+        const row = `
+          <tr>
+            <td>${weapon.name}</td>
+            <td>
+              <div class="input-group input-group-sm">
+                <input
+                  id="weapon_prob_${weapon.id}"
+                  class="new_weapon data number form-control"
+                  type="number" min="0" max="9999"
+                  parent_id="{{ cs.id }}" item_id="${weapon.id}" item_type="et_weapon_prob"
+                  value="${weapon.probability}"
+                />
+                <span class="input-group-text">%</span>
+              </div>
+            </td>
+          </tr>`;
+        $('#1h_melee > tbody').append(row);
+      }
+
+      // 2H melee
+      for (let i in result.weapons['2h_melee']){
+        const weapon = result.weapons['2h_melee'][i];
+        const row = `
+          <tr>
+            <td>${weapon.name}</td>
+            <td>
+              <div class="input-group input-group-sm">
+                <input
+                  id="weapon_prob_${weapon.id}"
+                  class="new_weapon data number form-control"
+                  type="number" min="0" max="9999"
+                  parent_id="{{ cs.id }}" item_id="${weapon.id}" item_type="et_weapon_prob"
+                  value="${weapon.probability}"
+                />
+                <span class="input-group-text">%</span>
+              </div>
+            </td>
+          </tr>`;
+        $('#2h_melee > tbody').append(row);
+      }
+
+      // Ranged
+      for (let i in result.weapons.ranged){
+        const weapon = result.weapons.ranged[i];
+        const row = `
+          <tr>
+            <td>${weapon.name}</td>
+            <td>
+              <div class=\"input-group input-group-sm\">
+                <input
+                  id=\"weapon_prob_${weapon.id}\"
+                  class=\"new_weapon data number form-control\"
+                  type=\"number\" min=\"0\" max=\"9999\"
+                  parent_id=\"{{ cs.id }}\" item_id=\"${weapon.id}\" item_type=\"et_weapon_prob\"
+                  value=\"${weapon.probability}\"
+                />
+                <span class=\"input-group-text\">%</span>
+              </div>
+            </td>
+          </tr>`;
+        $('#ranged > tbody').append(row);
+      }
+
+      // Shields
+      for (let i in result.weapons['shield']){
+        const weapon = result.weapons['shield'][i];
+        const row = `
+          <tr>
+            <td>${weapon.name}</td>
+            <td>
+              <div class="input-group input-group-sm">
+                <input
+                  id="weapon_prob_${weapon.id}"
+                  class="new_weapon data number form-control"
+                  type="number" min="0" max="9999"
+                  parent_id="{{ cs.id }}" item_id="${weapon.id}" item_type="et_weapon_prob"
+                  value="${weapon.probability}"
+                />
+                <span class="input-group-text">%</span>
+              </div>
+            </td>
+          </tr>`;
+        $('#shield > tbody').append(row);
+      }
+
+      // retain existing behavior
+      $('.new_weapon:input[type=number]').off('blur change');
+      $('.new_weapon:input[type=number]').on('blur change', function(event){
+        bind_change_listeners(event);
+      });
+    }
+
+    $('.weapon_selector').click(function(event){
+      update_weapons($(event.target));
+      // keep existing toggling behavior
+      $('.weapon_selector').removeClass('active_button');
+      $(event.target).addClass('active_button');
+    });
+    </script>
+
+    <div class="row g-3">
+      <!-- 1-handed -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body p-2">
+            <h4 class="h1 mb-2">1-handed weapons</h4>
+            <div class="mb-2">
+              <label class="form-label small mb-1" for="et_one_h_amount_{{ cs.id }}">Amount</label>
+              <input id="et_one_h_amount_{{ cs.id }}" class="data form-control form-control-sm w-auto" type="text" item_id="{{ cs.id }}" item_type="et_one_h_amount" value="{{ cs.one_h_amount }}" />
+            </div>
+            <div class="table-responsive">
+              <table id="1h_melee" class="weapon_table table table-sm table-striped align-middle mb-0 w-100">
+                <thead>
+                  <tr><th>Weapon</th><th>Prob.</th></tr>
+                </thead>
+                <tbody>
+                  {% for weapon in cs.one_h_melee %}
+                    <tr>
+                      <td>{{ weapon.name }}</td>
+                      <td>
+                        <div class="input-group input-group-sm">
+                          <input id="weapon_prob_{{weapon.id}}" class="data number form-control"
+                                 type="number" min="0" max="9999"
+                                 parent_id="{{ cs.id }}" item_id="{{weapon.id}}" item_type="et_weapon_prob"
+                                 value="{{ weapon.probability }}" />
+                          <span class="input-group-text">%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-handed -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body p-2">
+            <h4 class="h1 mb-2">2-handed weapons</h4>
+            <div class="mb-2">
+              <label class="form-label small mb-1" for="et_two_h_amount_{{ cs.id }}">Amount</label>
+              <input id="et_two_h_amount_{{ cs.id }}" class="data form-control form-control-sm w-auto" type="text" item_id="{{ cs.id }}" item_type="et_two_h_amount" value="{{ cs.two_h_amount }}" />
+            </div>
+            <div class="table-responsive">
+              <table id="2h_melee" class="weapon_table table table-sm table-striped align-middle mb-0">
+                <thead>
+                  <tr><th>Weapon</th><th>Prob.</th></tr>
+                </thead>
+                <tbody>
+                  {% for weapon in cs.two_h_melee %}
+                    <tr>
+                      <td>{{ weapon.name }}</td>
+                      <td>
+                        <div class="input-group input-group-sm">
+                          <input id="weapon_prob_{{weapon.id}}" class="data number form-control"
+                                 type="number" min="0" max="9999"
+                                 parent_id="{{ cs.id }}" item_id="{{weapon.id}}" item_type="et_weapon_prob"
+                                 value="{{ weapon.probability }}" />
+                          <span class="input-group-text">%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranged -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body p-2">
+            <h4 class="h1 mb-2">Ranged weapons</h4>
+            <div class="mb-2">
+              <label class="form-label small mb-1" for="et_ranged_amount_{{ cs.id }}">Amount</label>
+              <input id="et_ranged_amount_{{ cs.id }}" class="data form-control form-control-sm w-auto" type="text" item_id="{{ cs.id }}" item_type="et_ranged_amount" value="{{ cs.ranged_amount }}" />
+            </div>
+            <div class="table-responsive">
+              <table id="ranged" class="weapon_table table table-sm table-striped align-middle mb-0">
+                <thead>
+                  <tr><th>Weapon</th><th>Prob.</th></tr>
+                </thead>
+                <tbody>
+                  {% for weapon in cs.ranged %}
+                    <tr>
+                      <td>{{ weapon.name }}</td>
+                      <td>
+                        <input id="weapon_prob_{{weapon.id}}" class="data number form-control form-control-sm"
+                               type="number" min="0" max="9999"
+                               parent_id="{{ cs.id }}" item_id="{{weapon.id}}" item_type="et_weapon_prob"
+                               value="{{ weapon.probability }}" />
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shields -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body p-2">
+            <h4 class="h1 mb-2">Shields</h4>
+            <div class="mb-2">
+              <label class="form-label small mb-1" for="et_shield_amount_{{ cs.id }}">Amount</label>
+              <input id="et_shield_amount_{{ cs.id }}" class="data form-control form-control-sm w-auto" type="text" item_id="{{ cs.id }}" item_type="et_shield_amount" value="{{ cs.shield_amount }}" />
+            </div>
+            <div class="table-responsive">
+              <table id="shield" class="weapon_table table table-sm table-striped align-middle mb-0">
+                <thead>
+                  <tr><th>Weapon</th><th>Prob.</th></tr>
+                </thead>
+                <tbody>
+                  {% for weapon in cs.shield %}
+                    <tr>
+                      <td>{{ weapon.name }}</td>
+                      <td>
+                        <input id="weapon_{{weapon.id}}" class="data number form-control form-control-sm"
+                               type="number" min="0" max="9999"
+                               parent_id="{{ cs.id }}" item_id="{{weapon.id}}" item_type="et_weapon_prob"
+                               value="{{ weapon.probability }}" />
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div> <!-- /.row -->
+
+    <div class="mt-3">
+      {% if cs.customs %}
+        <h4>Custom weapons</h4>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <tr valign="bottom">
+              <th>Name</th><th>Type</th><th>Damage</th><th>Size</th><th>Reach</th>
+              <th>Range</th><th>SpecialFX</th><th>Dam.<br>mod.</th><th>Natural<br>weapon</th>
+              <th>AP</th><th>HP</th><th>Prob.</th><th></th>
+            </tr>
+            {% for weapon in cs.customs %}
+            <tr>
+              <td class="min-w-200"><input id="custom_weapon_name_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_name" value="{{ weapon.name }}" /></td>
+              <td>
+                <select id="custom_weapon_type_{{weapon.id}}" class="data form-select form-select-sm" item_id="{{ weapon.id }}" item_type="et_custom_weapon_type">
+                  <option value="1h-melee" {% if weapon.type == '1h-melee' %}selected="selected"{% endif %}>1-handed</option>
+                  <option value="2h-melee" {% if weapon.type == '2h-melee' %}selected="selected"{% endif %}>2-handed</option>
+                  <option value="ranged" {% if weapon.type == 'ranged' %}selected="selected"{% endif %}>Ranged</option>
+                  <option value="shield" {% if weapon.type == 'shield' %}selected="selected"{% endif %}>Shield</option>
+                </select>
+              </td>
+              <td><input id="custom_weapon_damage_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_damage" value="{{weapon.damage}}"></td>
+              <td>
+                <select id="custom_weapon_size_{{weapon.id}}" class="data form-select form-select-sm" item_id="{{ weapon.id }}" item_type="et_custom_weapon_size">
+                  <option value="-" {% if weapon.size == '-' %}selected="selected"{% endif %}>-</option>
+                  <option value="S" {% if weapon.size == 'S' %}selected="selected"{% endif %}>S</option>
+                  <option value="M" {% if weapon.size == 'M' %}selected="selected"{% endif %}>M</option>
+                  <option value="L" {% if weapon.size == 'L' %}selected="selected"{% endif %}>L</option>
+                  <option value="H" {% if weapon.size == 'H' %}selected="selected"{% endif %}>H</option>
+                  <option value="E" {% if weapon.size == 'E' %}selected="selected"{% endif %}>E</option>
+                  <option value="C" {% if weapon.size == 'C' %}selected="selected"{% endif %}>C</option>
+                </select>
+              </td>
+              <td>
+                <select id="custom_weapon_reach_{{weapon.id}}" class="data form-select form-select-sm" item_id="{{ weapon.id }}" item_type="et_custom_weapon_reach">
+                  <option value="-" {% if weapon.reach == '-' %}selected="selected"{% endif %}>-</option>
+                  <option value="T" {% if weapon.reach == 'T' %}selected="selected"{% endif %}>T</option>
+                  <option value="S" {% if weapon.reach == 'S' %}selected="selected"{% endif %}>S</option>
+                  <option value="M" {% if weapon.reach == 'M' %}selected="selected"{% endif %}>M</option>
+                  <option value="L" {% if weapon.reach == 'L' %}selected="selected"{% endif %}>L</option>
+                  <option value="VL" {% if weapon.reach == 'VL' %}selected="selected"{% endif %}>VL</option>
+                </select>
+              </td>
+              <td><input id="custom_weapon_range_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_range" value="{{weapon.range}}"></td>
+              <td><input id="custom_weapon_special_effects_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_special_effects" value="{{weapon.special_effects}}"></td>
+              <td><input id="custom_weapon_dammod_{{weapon.id}}" class="data" type="checkbox" item_id="{{weapon.id}}" item_type="et_custom_weapon_damage_modifier" {% if weapon.damage_modifier %}checked="checked"{% endif %}></td>
+              <td><input id="custom_weapon_natweap_{{weapon.id}}" class="data natural_weapon" type="checkbox" item_id="{{weapon.id}}" item_type="et_custom_weapon_natural_weapon" {% if weapon.natural_weapon %}checked="checked"{% endif %}></td>
+              <td class="ap_hp" {% if weapon.natural_weapon %}style="display: none;"{% endif %}><input id="custom_weapon_ap_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="100" item_id="{{weapon.id}}" item_type="et_custom_weapon_ap" value="{{weapon.ap}}"></td>
+              <td class="ap_hp" {% if weapon.natural_weapon %}style="display: none;"{% endif %}><input id="custom_weapon_hp_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="100" item_id="{{weapon.id}}" item_type="et_custom_weapon_hp" value="{{weapon.hp}}"></td>
+              <td class="ap_hp" colspan="2" {% if not weapon.natural_weapon %}style="display: none;"{% endif %}><input id="custom_weapon_ap_hp_as_per_{{weapon.id}}" class="data form-control form-control-sm" type="text" item_id="{{weapon.id}}" item_type="et_custom_weapon_ap_hp_as_per" value="{{ weapon.ap_hp_as_per }}" /></td>
+              <td><input id="custom_weapon_prob_{{weapon.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" item_id="{{weapon.id}}" item_type="et_custom_weapon_prob" value="{{ weapon.probability }}" /></td>
+              <td><img src="{% static 'minus.png' %}" width="23" height="23" class="del_item" item_id="{{ weapon.id }}" item_type="custom_weapon"/></td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      {% endif %}
+      <button class="add_custom_weapon btn btn-primary btn-sm" cs_id="{{ cs.id }}" type="1h-melee">Add custom weapon</button>
+    </div>
+  </div>
+</div>
 {% endfor %}
