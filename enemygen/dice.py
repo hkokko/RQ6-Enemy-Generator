@@ -9,7 +9,7 @@ from collections import OrderedDict
 
 class Dice:
     def __init__(self, dice_set):
-        self.dice_set = dice_set.upper()
+        self.dice_set = ''.join(str(dice_set).split()).upper()
         self.components = self._dissect()
     
     def roll(self):
@@ -50,6 +50,7 @@ class Dice:
 
 def clean(dieset):
     """ Cleans the given dieset combining simila components. eg. STR+D10+1d10 bcomes STR+2d10 """
+    dieset = ''.join(str(dieset).split())
     dieset = dieset.replace('+-', '-')
     dieset = dieset.replace('-+', '-')
     dieset = dieset.upper()
