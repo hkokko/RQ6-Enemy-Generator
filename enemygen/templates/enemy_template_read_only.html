@@ -5,322 +5,418 @@
 
 {% block content %}
 
-{% if user.username %}
-<div id="clone_template_container">
-<form action="{% url 'clone_template' et.id %}" method="post">
-{% csrf_token %}
-<input id="clone_template" type="submit" value="Clone" />
-</form>
-</div>
-{% endif %}
-
-<div id="generate_enemy_container">
-<form action="{% url 'generate_enemies' %}" method="post" target="generated">
-{% csrf_token %}
-<input name="enemy_template_id_{{et.id}}" type="hidden" value="6">
-<input style="width: 140px;" type="submit" value="Generate" />
-</form>
-</div>
-
-<h3 style="display: inline;">
-    {{ et.name }}
-    {% if et.starred %}
-        <img et_id={{ et.id }} class="star" height="22" width="22" src="{% static 'images/star_filled.png' %}" />
-    {% else %}
-        <img et_id={{ et.id }} class="star" height="22" width="22" src="{% static 'images/star_empty.png' %}" {% if not user.is_authenticated %}title="Log in to Star favorites"{% endif %} />
+<!-- Actions -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body d-flex flex-wrap gap-2">
+    {% if user.username %}
+    <form id="clone_template_container" action="{% url 'clone_template' et.id %}" method="post" class="me-2">
+      {% csrf_token %}
+      <button id="clone_template" type="submit" class="btn btn-outline-secondary btn-sm">Clone</button>
+    </form>
     {% endif %}
-</h3>
-<span class="generated_amount">(Generated {{ et.generated }} times)</span>
+    <form id="generate_enemy_container" action="{% url 'generate_enemies' %}" method="post" target="generated" class="ms-auto">
+      {% csrf_token %}
+      <input name="enemy_template_id_{{et.id}}" type="hidden" value="6">
+      <button type="submit" class="btn btn-primary btn-sm" style="min-width:140px;">Generate</button>
+    </form>
+  </div>
+</div>
 
-<table><tr>
-    <th>Namelist</th>
-    <td>{% if et.namelist %}{{ et.namelist.name }} (<a href="{% url 'feature_items' et.namelist.id %}">View names</a>){% else %}None{% endif %}</td>
-</tr><tr>
-    <th>Tags</th>
-    <td><div id="tag_container">
-        {% for tag in et.get_tags %}<div class="tag">{{ tag }}</div>{% endfor %}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <h3 class="h5 mb-0">{{ et.name }}</h3>
+      {% if et.starred %}
+        <img et_id={{ et.id }} class="star" height="22" width="22" src="{% static 'images/star_filled.png' %}" />
+      {% else %}
+        <img et_id={{ et.id }} class="star" height="22" width="22" src="{% static 'images/star_empty.png' %}" {% if not user.is_authenticated %}title="Log in to Star favorites"{% endif %} />
+      {% endif %}
+      <span class="generated_amount text-muted small">(Generated {{ et.generated }} times)</span>
+    </div>
+
+    <div class="row g-3 align-items-start">
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-0">Namelist</label>
+        <div class="form-control-plaintext">{% if et.namelist %}{{ et.namelist.name }} (<a href="{% url 'feature_items' et.namelist.id %}">View names</a>){% else %}None{% endif %}</div>
+      </div>
+      <div class="col-12">
+        <label class="form-label mb-0">Tags</label>
+        <div id="tag_container" class="d-flex flex-wrap gap-1">
+          {% for tag in et.get_tags %}<div class="badge bg-secondary">{{ tag }}</div>{% endfor %}
         </div>
-    </td>
-</tr><tr>
-    <th>Rank</th>
-    <td>{{ et.get_rank_display }}</td>
-</tr><tr>
-    <th>Race</th>
-    <td><a href="{% url 'race' et.race.id %}">{{ et.race.name }}</a></td>
-</tr><tr>
-    <th>Cult rank</th>
-    <td>{{ et.get_cult_rank_display }}</td>
-</tr><tr>
-    <th>Notes</th>
-    <td>{{ et.notes }}</td>
-</tr><tr>
-    <th>Creator</th><td>{{ et.owner.username }}</td>
-</tr></table>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-0">Rank</label>
+        <div class="form-control-plaintext">{{ et.get_rank_display }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-0">Race</label>
+        <div class="form-control-plaintext"><a href="{% url 'race' et.race.id %}">{{ et.race.name }}</a></div>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-0">Cult rank</label>
+        <div class="form-control-plaintext">{{ et.get_cult_rank_display }}</div>
+      </div>
+      <div class="col-12">
+        <label class="form-label mb-0">Notes</label>
+        <div class="border rounded p-2 bg-light">{{ et.notes }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-0">Creator</label>
+        <div class="form-control-plaintext">{{ et.owner.username }}</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-<table id="stats_and_hp"><tr><td valign="top">
-<table>
-<tr><th colspan="2">Stats</th></tr>
-{% for stat in et.stats %}
-    <tr>
-        <td>{{ stat.name }}</td>
-        <td>{{ stat.die_set }}</td>
-    </tr>
-{% endfor %}
-</table>
-</td><td valign="top">
-<table>
-<tr><th>D20</th><th>Hit location</th><th>Armor</th></tr>
-{% for hl in et.hit_locations %}
-    <tr>
-        <td>{{ hl.range|safe }}</td>
-        <td>{{ hl.name }}</td>
-        <td>{{ hl.armor }}</td>
-    </tr>
-{% endfor %}
-</table>
-</td><td valign="top">
-<table>
-<tr><th colspan="2">Attributes</th></tr>
-<tr>
-    <td>Movement</td>
-    <td>{{ et.movement }}</td>
-</tr>
-<tr>
-    <td>Natural armor</td>
-    <td>{% if et.natural_armor %}Yes{% else %}No{% endif %}</td>
-</tr>
-</table>
-</td></tr></table>
+<div class="row g-3">
+  <div class="col-12 col-lg-4">
+    <div class="card shadow-sm mb-3 h-100"><div class="card-body p-3">
+      <h3 class="h6 card-title">Stats</h3>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <tbody>
+          {% for stat in et.stats %}
+            <tr>
+              <td style="width: 50%">{{ stat.name }}</td>
+              <td>{{ stat.die_set }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
+
+  {% if et.hit_locations %}
+  <div class="col-12 col-lg-4">
+    <div class="card shadow-sm mb-3 h-100"><div class="card-body p-3">
+      <h3 class="h6 card-title">Hit locations</h3>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>D20</th><th>Hit location</th><th>Armor</th></tr></thead>
+          <tbody>
+          {% for hl in et.hit_locations %}
+            <tr>
+              <td>{{ hl.range|safe }}</td>
+              <td>{{ hl.name }}</td>
+              <td>{{ hl.armor }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
+  {% endif %}
+
+  <div class="col-12 col-lg-4">
+    <div class="card shadow-sm mb-3 h-100"><div class="card-body p-3">
+      <h3 class="h6 card-title">Attributes</h3>
+      <div class="row g-2 align-items-center mb-2">
+        <div class="col-6">Movement</div>
+        <div class="col-6"><div class="form-control-plaintext">{{ et.movement }}</div></div>
+      </div>
+      <div>Natural armor: <span class="badge {% if et.natural_armor %}bg-success{% else %}bg-secondary{% endif %}">{{ et.natural_armor|yesno:"Yes,No" }}</span></div>
+    </div></div>
+  </div>
+</div>
 
 {% if et.cults and et.cult_amount != '0' %}
-<h3>Cults</h3>
-Amount: {{ et.cult_amount }}
-<table>
-<tr><th>Cult</th><th>Prob.</th></tr>
-{% for cult in et.cults %}
-<tr>
-    <td><a href="{% url 'enemy_template' cult.cult.id %}">{{ cult.name }}</a></td>
-    <td>{{ cult.probability }}</td>
-</tr>
-{% endfor %}
-</table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Cults</h3>
+  <p class="mb-2">Amount: {{ et.cult_amount }}</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Cult</th><th>Prob.</th></tr></thead>
+      <tbody>
+      {% for cult in et.cults %}
+        <tr>
+          <td><a href="{% url 'enemy_template' cult.cult.id %}">{{ cult.name }}</a></td>
+          <td>{{ cult.probability }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div></div>
 {% endif %}
 
-<div> <!-- Additional Features -->
-    {% if et.additional_features %}
-        <h3>Additional features</h3>
-        <table>
-<tr><th>Feature</th><th>Probability</th><th></th></tr>
-{% for f in et.additional_features %}
-    <tr>
-        <td>{{ f.name }}</td>
-        <td>{{ f.probability }}%</td>
-        <td><a href="{% url 'feature_items' f.feature_list.id %}">View items</a></td>
-    </tr>
-{% endfor %}
-        </table>
-    {% endif %}
-</div>
+{% if et.additional_features %}
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Additional features</h3>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Feature</th><th>Probability</th><th></th></tr></thead>
+      <tbody>
+      {% for f in et.additional_features %}
+        <tr>
+          <td>{{ f.name }}</td>
+          <td>{{ f.probability }}%</td>
+          <td><a class="btn btn-link btn-sm p-0" href="{% url 'feature_items' f.feature_list.id %}">View items</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div></div>
+{% endif %}
 
-<div> <!-- Non-random features -->
-    {% if et.nonrandom_features %}
-    <h3>Non-random features</h3>
-        <table>
-            <tr><th>List</th><th>Feature</th></tr>
-        {% for feature in et.nonrandom_features %}
-            <tr>
-                <td>{{ feature.feature.feature_list.name }}</td>
-                <td>{{ feature.feature.name }}</td>
-            </tr>
+{% if et.nonrandom_features %}
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Non-random features</h3>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>List</th><th>Feature</th></tr></thead>
+      <tbody>
+      {% for feature in et.nonrandom_features %}
+        <tr>
+          <td>{{ feature.feature.feature_list.name }}</td>
+          <td>{{ feature.feature.name }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div></div>
+{% endif %}
+
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Standard skills</h3>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <tbody>
+        <tr>
+        {% for skill in et.included_standard_skills %}
+          <td class="text-nowrap" style="min-width: 160px;"><strong>{{ skill.name }}</strong></td>
+          <td style="width: 200px;">{{ skill.die_set }}</td>
+          {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
         {% endfor %}
-        </table>
-    {% endif %}
-</div>
-
-<h3>Standard skills</h3>
-<table class="read_only"><tr>
-{% for skill in et.included_standard_skills %}
-    <th>{{ skill.name }}</th>
-    <td>{{ skill.die_set }}</td>
-    {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div></div>
 
 {% if et.included_magic_skills %}
-<h3>Magic skills</h3>
-<table class="read_only"><tr>
-{% for skill in et.included_magic_skills %}
-    <th>{{ skill.name }}</th>
-    <td>{{ skill.die_set }}</td>
-    {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Magic skills</h3>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0"><tbody><tr>
+      {% for skill in et.included_magic_skills %}
+        <td class="text-nowrap" style="min-width: 160px;"><strong>{{ skill.name }}</strong></td>
+        <td style="width: 200px;">{{ skill.die_set }}</td>
+        {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
+      {% endfor %}
+    </tr></tbody></table>
+  </div>
+</div></div>
 {% endif %}
 
 {% if et.included_professional_skills %}
-<h3>Professional skills</h3>
-<table class="read_only"><tr>
-{% for skill in et.included_professional_skills %}
-    <th>{{ skill.name }}</th>
-    <td>{{ skill.die_set }}</td>
-    {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Professional skills</h3>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0"><tbody><tr>
+      {% for skill in et.included_professional_skills %}
+        <td class="text-nowrap" style="min-width: 160px;"><strong>{{ skill.name }}</strong></td>
+        <td style="width: 200px;">{{ skill.die_set }}</td>
+        {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
+      {% endfor %}
+    </tr></tbody></table>
+  </div>
+</div></div>
 {% endif %}
 
 {% if et.included_custom_skills %}
-<h3>Custom skills</h3>
-<table class="read_only"><tr>
-{% for skill in et.included_custom_skills %}
-    <th>{{ skill.name }}</th>
-    <td>{{ skill.die_set }}</td>
-    {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Custom skills</h3>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0"><tbody><tr>
+      {% for skill in et.included_custom_skills %}
+        <td class="text-nowrap" style="min-width: 160px;"><strong>{{ skill.name }}</strong></td>
+        <td style="width: 200px;">{{ skill.die_set }}</td>
+        {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
+      {% endfor %}
+    </tr></tbody></table>
+  </div>
+</div></div>
 {% endif %}
 
 {% if not et.is_spirit %}
-<h3>Combat styles</h3>
-<table class="read_only"><tr>
-{% for cs in et.combat_styles %}
-<tr><th>{{ cs.name }}</th><td>{{ cs.die_set }}</td>
-</table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Combat styles</h3>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <tbody>
+      {% for cs in et.combat_styles %}
+        <tr><td style="min-width:200px;"><strong>{{ cs.name }}</strong></td><td>{{ cs.die_set }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div></div>
 
-<h3>Weapon options</h3>
-<table><tr><td valign="top">
-<h4>1-handed weapons</h4>
-<b>Amount: {{cs.one_h_amount}}</b>
-<table>
-    {% for weapon in cs.one_h_options %}
-    <tr><td>{{ weapon.name }} ({{weapon.probability}})</td></tr>
-    {% endfor %}
-</table>
-</td>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Weapon options</h3>
+  {% for cs in et.combat_styles %}
+  <div class="row g-3">
+    <div class="col-12 col-md-6 col-lg-3">
+      <h4 class="h6">1-handed weapons</h4>
+      <p class="mb-1"><strong>Amount:</strong> {{cs.one_h_amount}}</p>
+      <ul class="list-unstyled mb-0">
+        {% for weapon in cs.one_h_options %}
+          <li>{{ weapon.name }} <span class="text-muted">({{weapon.probability}})</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+      <h4 class="h6">2-handed weapons</h4>
+      <p class="mb-1"><strong>Amount:</strong> {{cs.two_h_amount}}</p>
+      <ul class="list-unstyled mb-0">
+        {% for weapon in cs.two_h_options %}
+          <li>{{ weapon.name }} <span class="text-muted">({{weapon.probability}})</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+      <h4 class="h6">Ranged weapons</h4>
+      <p class="mb-1"><strong>Amount:</strong> {{cs.ranged_amount}}</p>
+      <ul class="list-unstyled mb-0">
+        {% for weapon in cs.ranged_options %}
+          <li>{{ weapon.name }} <span class="text-muted">({{weapon.probability}})</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="col-12 col-md-6 col-lg-3">
+      <h4 class="h6">Shields</h4>
+      <p class="mb-1"><strong>Amount:</strong> {{cs.shield_amount}}</p>
+      <ul class="list-unstyled mb-0">
+        {% for weapon in cs.shield_options %}
+          <li>{{ weapon.name }} <span class="text-muted">({{weapon.probability}})</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 
-<td valign="top">
-<h4>2-handed weapons</h4>
-<b>Amount: {{cs.two_h_amount}}</b>
-<table>
-    {% for weapon in cs.two_h_options %}
-    <tr><td>{{ weapon.name }} ({{weapon.probability}})</td></tr>
-    {% endfor %}
-</table>
-</td>
+  {% if cs.custom_weapons %}
+  <h4 class="h6 mt-3">Custom weapons</h4>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr>
+        <th>Name</th><th>Type</th><th>Damage</th><th>Size</th><th>Reach</th><th>Range</th><th>SpecialFX</th><th>Dam. mod.</th><th>Natural</th><th>AP/HP</th>
+      </tr></thead>
+      <tbody>
+      {% for weapon in cs.custom_weapons %}
+        <tr>
+          <td>{{ weapon.name }}</td>
+          <td>{{ weapon.type }}</td>
+          <td>{{ weapon.damage }}</td>
+          <td>{{ weapon.size }}</td>
+          <td>{{ weapon.reach }}</td>
+          <td>{{ weapon.range }}</td>
+          <td>{{ weapon.special_effects }}</td>
+          <td>{{ weapon.damage_modifier|yesno:"Y,N" }}</td>
+          <td>{{ weapon.natural_weapon|yesno:"Y,N" }}</td>
+          <td>
+            {% if weapon.natural_weapon %}
+              {{ weapon.ap_hp_as_per }}
+            {% else %}
+              AP {{ weapon.ap }}, HP {{ weapon.hp }}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
 
-<td valign="top">
-<h4>Ranged weapons</h4>
-<b>Amount: {{cs.ranged_amount}}</b>
-<table>
-    {% for weapon in cs.ranged_options %}
-    <tr><td>{{ weapon.name }} ({{weapon.probability}})</td></tr>
-    {% endfor %}
-</table>
-</td>
-
-<td valign="top">
-<h4>Shields</h4>
-<b>Amount: {{cs.shield_amount}}</b>
-<table>
-    {% for weapon in cs.shield_options %}
-    <tr><td>{{ weapon.name }} ({{weapon.probability}})</td></tr>
-    {% endfor %}
-</table>
-</td></tr></table>
-
-{% if cs.custom_weapons %}
-<h4>Custom weapons</h4>
-<table>
-<tr valign="bottom">
-    <th>Name</th>
-    <th>Type</th>
-    <th>Damage</th>
-    <th>Size</th>
-    <th>Reach</th>
-    <th>Range</th>
-    <th>SpecialFX</th>
-    <th>Dam.<br>mod.</th>
-    <th>Natural<br>weapon</th>
-    <th>AP</th>
-    <th>HP</th>
-</tr>
-{% for weapon in cs.custom_weapons %}
-<tr>
-    <td>{{ weapon.name }}</td>
-    <td>{{ weapon.type }}</td>
-    <td>{{ weapon.damage }}</td>
-    <td>{{ weapon.size }}</td>
-    <td>{{ weapon.reach }}</td>
-    <td>{{weapon.range}}</td>
-    <td>{{weapon.special_effects}}</td>
-    <td>{% if weapon.damage_modifier %}Y{% else %}N{% endif %}</td>
-    <td>{% if weapon.natural_weapon %}Y{% else %}N{% endif %}</td>
-    <td {% if weapon.natural_weapon %}style="display: none;"{% endif %}>{{weapon.ap}}</td>
-    <td {% if weapon.natural_weapon %}style="display: none;"{% endif %}>{{weapon.hp}}</td>
-    <td colspan="2" {% if not weapon.natural_weapon %}style="display: none;"{% endif %}>{{ weapon.ap_hp_as_per }}</td>
-</tr>
-{% endfor %}
-</table>
-{% endif %}
-
-{% endfor %}
-<br>
-
-
+  {% endfor %}
+</div></div>
 {% endif %} <!-- et.spirit if ends -->
 
 {% if et.folk_spells %}
-<h3>Folk spells</h3>
-Amount: {{ et.folk_spell_amount }}
-<table><tr>
-<tr><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th></tr>
-{% for spell in et.folk_spells %}
-    <td>{{ spell.name }} {{ spell.detail_text }}</td>
-    <td>{{ spell.probability }}</td>
-    {% if not forloop.first and forloop.counter|divisibleby:"4" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Folk spells</h3>
+  <p class="mb-2">Amount: {{ et.folk_spell_amount }}</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr><th>Spell</th><th>Prob.</th><th>Spell</th><th>Prob.</th><th>Spell</th><th>Prob.</th><th>Spell</th><th>Prob.</th></tr>
+      </thead>
+      <tbody><tr>
+        {% for spell in et.folk_spells %}
+          <td>{{ spell.name }} {{ spell.detail_text }}</td>
+          <td>{{ spell.probability }}</td>
+          {% if not forloop.first and forloop.counter|divisibleby:"4" %}</tr><tr>{% endif %}
+        {% endfor %}
+      </tr></tbody>
+    </table>
+  </div>
+</div></div>
 {% endif %}
 
 {% if et.theism_spells %}
-<h3>Theism spells</h3>
-Amount: {{ et.theism_spell_amount }}
-<table>
-<tr><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th></tr>
-<tr>
-{% for spell in et.theism_spells %}
-    <td>{{ spell.name }} {{ spell.detail_text }}</td>
-    <td>{{ spell.probability }}</td>
-    {% if not forloop.first and forloop.counter|divisibleby:"4" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Theism spells</h3>
+  <p class="mb-2">Amount: {{ et.theism_spell_amount }}</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr><th>Spell</th><th>Prob.</th><th>Spell</th><th>Prob.</th><th>Spell</th><th>Prob.</th><th>Spell</th><th>Prob.</th></tr>
+      </thead>
+      <tbody><tr>
+        {% for spell in et.theism_spells %}
+          <td>{{ spell.name }} {{ spell.detail_text }}</td>
+          <td>{{ spell.probability }}</td>
+          {% if not forloop.first and forloop.counter|divisibleby:"4" %}</tr><tr>{% endif %}
+        {% endfor %}
+      </tr></tbody>
+    </table>
+  </div>
+</div></div>
 {% endif %}
 
 {% if et.sorcery_spells and et.sorcery_spell_amount != '0' %}
-<h3>Sorcery spells</h3>
-Amount: {{ et.sorcery_spell_amount }}
-<table>
-<tr><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th><th>Spell</th><th>Prob.&nbsp;&nbsp;&nbsp;</th><th>Spell</th><th>Prob.</th></tr>
-<tr>
-{% for spell in et.sorcery_spells %}
-    <td>{{ spell.name }} {{ spell.detail_text }}</td>
-    <td>{{ spell.probability }}</td>
-    {% if not forloop.first and forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Sorcery spells</h3>
+  <p class="mb-2">Amount: {{ et.sorcery_spell_amount }}</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr><th>Spell</th><th>Prob.</th><th>Spell</th><th>Prob.</th><th>Spell</th><th>Prob.</th></tr>
+      </thead>
+      <tbody><tr>
+        {% for spell in et.sorcery_spells %}
+          <td>{{ spell.name }} {{ spell.detail_text }}</td>
+          <td>{{ spell.probability }}</td>
+          {% if not forloop.first and forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
+        {% endfor %}
+      </tr></tbody>
+    </table>
+  </div>
+</div></div>
 {% endif %}
 
 {% if et.spirits and et.spirit_amount != '0' %}
-<h3>Spirits</h3>
-Amount: {{ et.spirit_amount }}
-<table>
-<tr><th>Spirit</th><th>Prob.</th></tr>
-{% for spirit in et.spirits %}
-<tr>
-    <td><a href="{% url 'enemy_template' spirit.spirit.id %}">{{ spirit.name }}</a></td>
-    <td>{{ spirit.probability }}</td>
-</tr>
-{% endfor %}
-</table>
+<div class="card shadow-sm mb-3"><div class="card-body p-3">
+  <h3 class="h6 card-title">Spirits</h3>
+  <p class="mb-2">Amount: {{ et.spirit_amount }}</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Spirit</th><th>Prob.</th></tr></thead>
+      <tbody>
+        {% for spirit in et.spirits %}
+        <tr>
+          <td><a href="{% url 'enemy_template' spirit.spirit.id %}">{{ spirit.name }}</a></td>
+          <td>{{ spirit.probability }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div></div>
 {% endif %}
 
 {% endblock %}
