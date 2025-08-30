@@ -321,13 +321,13 @@ def save_as_html(context, template_name):
 def _get_html_prefix(context):
     party = context.get('party', None)
     if party:
-        prefix = 'rq_%s_' % party.name
+        prefix = 'MeG_%s_' % party.name
     else:
         # noinspection PyBroadException
         try:
-            prefix = 'rq_%s_' % context['enemies'][0].name.replace('_1', 's').replace('/', '_')
+            prefix = 'MeG_%s_' % context['enemies'][0].name.replace('_1', 's').replace('/', '_')
         except:
-            prefix = 'rq_'
+            prefix = 'MeG_'
     return prefix.replace(' ', '_').replace("'", '').replace('"', '')
 
 
