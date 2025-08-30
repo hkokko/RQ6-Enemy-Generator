@@ -666,7 +666,15 @@ def search(request):
 
 def get_weapons(request, cs_id):
     cs = CombatStyle.objects.get(id=cs_id)
-    cs.enemy_template.weapon_filter = request.GET['filter']
+    # Normalize filter: strip whitespace and surrounding quotes while preserving internal spaces
+    raw_filter = request.GET.get('filter', '')
+    if isinstance(raw_filter, str):
+        filtered = raw_filter.strip()
+        if len(filtered) >= 2 and filtered[0] == filtered[-1] and filtered[0] in ('"', "'"):
+            filtered = filtered[1:-1]
+    else:
+        filtered = str(raw_filter)
+    cs.enemy_template.weapon_filter = filtered
     cs.enemy_template.save()
     context = {'weapons': weapons(cs), 'success': True}
     return JsonResponse(context)

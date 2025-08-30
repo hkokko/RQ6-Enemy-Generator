@@ -251,7 +251,12 @@ def weapons(combat_style):
         weaponlist = Weapon.objects.filter(type=tipe)
         if filtr != 'All':
             # Avoid ORM join on TaggableManager to keep compatibility across taggit/Django versions
-            weaponlist = [w for w in weaponlist if filtr in w.tags.names()]
+            # Make tag comparison robust to case and stray whitespace (e.g., 'Monster Island' vs 'monster island')
+            fkey = (filtr or '').strip().lower()
+            weaponlist = [
+                w for w in weaponlist
+                if fkey in [t.strip().lower() for t in w.tags.names()]
+            ]
         for weapon in weaponlist:
             if prev_weapon and weapon.name == prev_weapon.name:
                 weapon.name = '%s (%s)' % (weapon.name, ', '.join(weapon.tags.names()))

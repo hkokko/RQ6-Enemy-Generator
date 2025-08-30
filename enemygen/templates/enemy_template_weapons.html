@@ -32,7 +32,12 @@ input.new_weapon[type=number] { -moz-appearance: textfield; }
 
     <script>
     async function update_weapons(target){
-      const result = await axios.get('/rest/get_weapons/'+ {{cs.id}} +'/', {params: {'filter': target.attr('filter')}});
+      let filterVal = target.attr('filter');
+      // If the filter name contains spaces, send it as a quoted string to preserve it server-side
+      if (typeof filterVal === 'string' && /\s/.test(filterVal)) {
+        filterVal = '"' + filterVal + '"';
+      }
+      const result = await axios.get('/rest/get_weapons/'+ {{cs.id}} +'/', { params: { filter: filterVal } });
       get_weapons_callback(result.data);
     };
 
@@ -141,10 +146,11 @@ input.new_weapon[type=number] { -moz-appearance: textfield; }
     }
 
     $('.weapon_selector').click(function(event){
-      update_weapons($(event.target));
-      // keep existing toggling behavior
-      $('.weapon_selector').removeClass('active_button');
-      $(event.target).addClass('active_button');
+      const $btn = $(event.currentTarget);
+      update_weapons($btn);
+      // Sync visual active state consistently with bootstrap-like 'active'
+      $('.weapon_selector').removeClass('active');
+      $btn.addClass('active');
     });
     </script>
 
