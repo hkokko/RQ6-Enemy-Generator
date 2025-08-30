@@ -3,18 +3,22 @@
 {% block content %}
 
 {% if party %}
-    <h4>Confirm delete party</h4>
-    <p>Are you sure you want to delete the party {{ party.name }} (id: {{ party.id }})?</p>
-    <form action="{% url 'delete_party' party.id %}" method="post">
-    {% csrf_token %}
-    <p>
-        <input type="submit" name="answer" class="my_button" value="Yes">
-        <input type="submit" name="answer" class="my_button" value="No">
-    </p>
-    </form>
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h4 class="h5 card-title mb-2">Confirm delete party</h4>
+      <p class="mb-3">Are you sure you want to delete the party <strong>{{ party.name }}</strong> (id: {{ party.id }})?</p>
+      <form action="{% url 'delete_party' party.id %}" method="post" class="d-flex gap-2">
+        {% csrf_token %}
+        <button type="submit" name="answer" value="Yes" class="btn btn-danger">Yes, delete</button>
+        <button type="submit" name="answer" value="No" class="btn btn-outline-secondary">No, cancel</button>
+      </form>
+    </div>
+  </div>
 {% else %}
-    <h4>Invalid party</h4>
-    <p>The party you are trying to delete either doesn't exist, or you don't have rights to delete it.</p>
+  <div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading h6 mb-2">Invalid party</h4>
+    <p class="mb-0">The party you are trying to delete either doesn't exist, or you don't have rights to delete it.</p>
+  </div>
 {% endif %}
 
 {% endblock %}
