@@ -414,7 +414,7 @@ def generate_pngs(html_path):
         soup = BeautifulSoup(ff, 'html.parser')
     enemies = soup.find_all('div', {'class': 'enemy_container'})
     container = soup.find('div', {'id': 'enemies'})
-    print('[generate_pngs] enemies found =', len(enemies))
+
     pngs = []
     for idx, enemy in enumerate(enemies, start=1):
         container.clear()
@@ -422,7 +422,7 @@ def generate_pngs(html_path):
         htmlfile = NamedTemporaryFile(mode='w', suffix='.html', dir=settings.TEMP, delete=False)
         htmlfile.write(soup.prettify())
         htmlfile.close()
-        print(f"[generate_pngs] temp HTML #{idx} = {htmlfile.name}")
+
         png_name = htmlfile.name.replace('.html', '.png')
         # Render HTML and write PNG if supported; otherwise PDF fallback with possible rasterization
         try:
@@ -436,7 +436,7 @@ def generate_pngs(html_path):
             if hasattr(document, 'write_png'):
                 # writes a PNG of the first page
                 document.write_png(png_name)
-                print('[generate_pngs] wrote PNG via Document.write_png ->', png_name)
+
             else:
                 # 53+: PNG removed – use PDF + rasterize fallback
                 pdf_name = htmlfile.name.replace('.html', '.pdf')
@@ -449,7 +449,7 @@ def generate_pngs(html_path):
                     pix = page0.get_pixmap(dpi=192)
                     pix.save(png_name)
                     doc.close()
-                    print('[generate_pngs] rasterized PDF to PNG via PyMuPDF ->', png_name)
+
                 except Exception as e:
                     print('[generate_pngs] PyMuPDF rasterization failed:', e)
                     png_name = pdf_name
@@ -461,7 +461,7 @@ def generate_pngs(html_path):
         try:
             exists = os.path.exists(png_name)
             size = os.path.getsize(png_name) if exists else 'N/A'
-            print(f"[generate_pngs] output candidate = {png_name} exists={exists} size={size}")
+
         except Exception:
             exists = False
         if not exists:
@@ -470,7 +470,7 @@ def generate_pngs(html_path):
                 stem = os.path.splitext(os.path.basename(png_name))[0]
                 pattern = os.path.join(settings.TEMP, f"{stem}.*")
                 matches = sorted(glob.glob(pattern))
-                print('[generate_pngs] glob search', pattern, '->', matches)
+
                 if matches:
                     png_name = matches[0]
                     exists = True
@@ -485,7 +485,7 @@ def generate_pngs(html_path):
                     try:
                         import shutil
                         shutil.copy2(png_name, out_abs)
-                        print('[generate_pngs] copied artifact into TEMP ->', out_abs)
+
                         png_name = out_abs
                     except Exception as e:
                         print('[generate_pngs] copy into TEMP failed:', e)
@@ -493,7 +493,7 @@ def generate_pngs(html_path):
                 if png_name.lower().endswith('.png'):
                     try:
                         _trim(png_name)
-                        print('[generate_pngs] trimmed PNG ->', png_name)
+
                     except Exception as e:
                         print('[generate_pngs] trim failed (non-fatal):', e)
                 pngs.append(png_name)
@@ -504,7 +504,7 @@ def generate_pngs(html_path):
     # Final TEMP listing sample
     try:
         entries = sorted(os.listdir(settings.TEMP))[:10]
-        print('[generate_pngs] TEMP content sample (first 10):', entries)
+
     except Exception:
         pass
     return pngs

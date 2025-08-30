@@ -272,69 +272,24 @@ def pdf_export(request):
 def png_export(request):
     if request.GET and request.GET.get('action') == 'png_export':
         png_paths = lib.generate_pngs(request.GET.get('generated_html'))
-        # Debug info to diagnose Not Found issues
-        try:
-            temp_dir = getattr(settings, 'TEMP', None)
-            print('[png_export] settings.TEMP =', temp_dir)
-            try:
-                real_temp = os.path.realpath(temp_dir) if temp_dir else None
-            except Exception:
-                real_temp = None
-            print('[png_export] settings.TEMP realpath =', real_temp)
-            print('[png_export] Returned paths:', png_paths)
-            # List a few files in TEMP for correlation
-            if temp_dir and os.path.isdir(temp_dir):
-                try:
-                    entries = sorted(os.listdir(temp_dir))
-                    sample = entries[:10]
-                    print('[png_export] TEMP content sample (first 10):', sample)
-                except Exception as e:
-                    print('[png_export] Could not list TEMP:', e)
-        except Exception:
-            pass
+        # Reduce noisy debug prints; keep only warnings on errors
         new_paths = []
         # Determine the actual directory being served at /temp/
         temp_doc_root = getattr(settings, 'TEMP_URL_DOCUMENT_ROOT', getattr(settings, 'TEMP', ''))
         temp_doc_root_real = os.path.realpath(temp_doc_root) if temp_doc_root else ''
-        temp_real = os.path.realpath(getattr(settings, 'TEMP', '')) if getattr(settings, 'TEMP', None) else ''
-        print(f"[png_export] /temp/ document_root realpath = {temp_doc_root_real}")
-        print(f"[png_export] settings.TEMP realpath (writer) = {temp_real}")
         for path in png_paths:
             fileName = os.path.basename(path)
             abs_expected = os.path.join(getattr(settings, 'TEMP', ''), fileName)
             try:
                 exists = os.path.exists(abs_expected)
-                size = os.path.getsize(abs_expected) if exists else 'N/A'
-                real_abs = os.path.realpath(abs_expected)
-                try:
-                    st = os.stat(abs_expected) if exists else None
-                    inode = getattr(st, 'st_ino', None) if st else None
-                    mtime = getattr(st, 'st_mtime', None) if st else None
-                except Exception:
-                    inode = None
-                    mtime = None
-                print(f"[png_export] basename={fileName} exists_in_TEMP={exists} size={size} realpath={real_abs} inode={inode} mtime={mtime}")
                 if not exists:
                     import glob
                     stem = os.path.splitext(fileName)[0]
                     pattern = os.path.join(getattr(settings, 'TEMP', ''), f"{stem}.*")
                     matches = sorted(glob.glob(pattern))
-                    print('[png_export] glob search', pattern, '->', [os.path.basename(m) for m in matches])
                     if matches:
-                        # Remap to the first match's basename
                         fileName = os.path.basename(matches[0])
                         abs_expected = matches[0]
-                        exists = True
-                        size = os.path.getsize(abs_expected)
-                        real_abs = os.path.realpath(abs_expected)
-                        try:
-                            st = os.stat(abs_expected)
-                            inode = getattr(st, 'st_ino', None)
-                            mtime = getattr(st, 'st_mtime', None)
-                        except Exception:
-                            inode = None
-                            mtime = None
-                        print(f"[png_export] remapped to {fileName} size={size} realpath={real_abs} inode={inode} mtime={mtime}")
                 # If the serving directory differs from the writing directory, ensure the file exists in the serving directory
                 if temp_doc_root_real and os.path.realpath(os.path.dirname(abs_expected)) != temp_doc_root_real:
                     try:
@@ -343,17 +298,15 @@ def png_export(request):
                         if not os.path.exists(target_path) and os.path.exists(abs_expected):
                             import shutil
                             shutil.copy2(abs_expected, target_path)
-                            print(f"[png_export] copied {abs_expected} -> {target_path} to match /temp/ docroot")
-                    except Exception as e:
-                        print('[png_export] copy to /temp/ docroot failed:', e)
-            except Exception as e:
-                print('[png_export] existence/glob check failed:', e)
+                    except Exception:
+                        pass
+            except Exception:
+                pass
             # Build URL using configured temp URL prefix (defaults to '/temp/')
             url_prefix = getattr(settings, 'TEMP_URL_PREFIX', '/temp/')
             if not url_prefix.endswith('/'):
                 url_prefix = url_prefix + '/'
             png_file = url_prefix + fileName
-            print('[png_export] this is the png url address:', png_file)
             new_paths.append(png_file)
 
         return render(request, 'generated_enemies_as_pngs.html', {'png_paths': new_paths})
