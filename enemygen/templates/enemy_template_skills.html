@@ -1,66 +1,126 @@
-<h3>Apply skill bonus</h3>
-<p>Applies to a bonus to all skills</p>
-<form action="{% url 'apply_skill_bonus' et.id %}" method="post">
-{% csrf_token %}
-<input name="bonus" type="text"/>
-<input type="submit" value="Apply" />
-</form>
+<!-- Apply skill bonus -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 card-title">Apply skill bonus</h3>
+    <p class="text-muted mb-2">Applies a bonus to all skills</p>
+    <form action="{% url 'apply_skill_bonus' et.id %}" method="post" class="d-flex gap-2 align-items-center flex-wrap">
+      {% csrf_token %}
+      <label for="skill_bonus" class="form-label mb-0">Bonus</label>
+      <input id="skill_bonus" name="bonus" type="text" class="form-control form-control-sm w-auto" />
+      <button type="submit" class="btn btn-outline-primary btn-sm">Apply</button>
+    </form>
+  </div>
+</div>
 
-<h3>Standard skills</h3>
-<table><tr>
-{% for skill in et.standard_skills %}
-        <td>{{ skill.name }}</td>
-        <td valign="top">
-            <input id="skill_include_{{skill.skill.id}}" class="data" type="checkbox" item_id="{{skill.id}}" item_type="et_skill_include" {% if skill.include %}checked="checked"{% endif %} />
-            <input id="skill_{{skill.skill.id}}" class="data" type="text" size="17" item_id="{{skill.id}}" item_type="et_skill_value" value="{{ skill.die_set }}" />
-        </td>
-        {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+<!-- Standard skills -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 card-title">Standard skills</h3>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <tbody>
+          <tr>
+          {% for skill in et.standard_skills %}
+            <td class="text-nowrap" style="min-width: 160px;">{{ skill.name }}</td>
+            <td style="width: 220px;">
+              <div class="form-check form-check-inline">
+                <input id="skill_include_{{skill.skill.id}}" class="data form-check-input" type="checkbox" item_id="{{skill.id}}" item_type="et_skill_include" {% if skill.include %}checked="checked"{% endif %} />
+                <label for="skill_include_{{skill.skill.id}}" class="form-check-label">Include</label>
+              </div>
+              <input id="skill_{{skill.skill.id}}" class="data form-control form-control-sm d-inline-block" style="width: 120px;" type="text" size="17" item_id="{{skill.id}}" item_type="et_skill_value" value="{{ skill.die_set }}" />
+            </td>
+            {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
+          {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
 {% if et.magic_skills %}
-<h3>Magic skills</h3>
-<table><tr>
-{% for skill in et.magic_skills %}
-        <td>{{ skill.name }}</td>
-        <td valign="top">
-            <input id="pro_skill_include_{{skill.skill.id}}" class="data" type="checkbox" item_id="{{skill.id}}" item_type="et_skill_include" {% if skill.include %}checked="checked"{% endif %} />
-            <input id="pro_skill_{{skill.skill.id}}" class="data" type="text" size="17" item_id="{{skill.id}}" item_type="et_skill_value" value="{{ skill.die_set }}" />
-        </td>
-        {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 card-title">Magic skills</h3>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <tbody>
+          <tr>
+          {% for skill in et.magic_skills %}
+            <td class="text-nowrap" style="min-width: 160px;">{{ skill.name }}</td>
+            <td style="width: 220px;">
+              <div class="form-check form-check-inline">
+                <input id="pro_skill_include_{{skill.skill.id}}" class="data form-check-input" type="checkbox" item_id="{{skill.id}}" item_type="et_skill_include" {% if skill.include %}checked="checked"{% endif %} />
+                <label for="pro_skill_include_{{skill.skill.id}}" class="form-check-label">Include</label>
+              </div>
+              <input id="pro_skill_{{skill.skill.id}}" class="data form-control form-control-sm d-inline-block" style="width: 120px;" type="text" size="17" item_id="{{skill.id}}" item_type="et_skill_value" value="{{ skill.die_set }}" />
+            </td>
+            {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
+          {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endif %}
 
 {% if et.professional_skills %}
-<div id="toggle_pro_skills" style="cursor: pointer;">
-    <h3 style="display: inline">Professional skills </h3><span style="font-size:9px">Click to show/hide</span>
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-3">
+    <div id="toggle_pro_skills" style="cursor: pointer;">
+      <h3 class="h6 card-title d-inline">Professional skills</h3>
+      <span class="text-muted small">Click to show/hide</span>
+    </div>
+    <div class="table-responsive">
+      <table id="professional_skills_table" class="table table-sm align-middle mb-0" {% if not et.included_professional_skills %}style="display: None;"{% endif %}>
+        <tbody>
+          <tr>
+          {% for skill in et.professional_skills %}
+            <td class="text-nowrap" style="min-width: 160px;">{{ skill.name }}</td>
+            <td style="width: 220px;">
+              <div class="form-check form-check-inline">
+                <input id="pro_skill_include_{{skill.skill.id}}" class="data form-check-input" type="checkbox" item_id="{{skill.id}}" item_type="et_skill_include" {% if skill.include %}checked="checked"{% endif %} />
+                <label for="pro_skill_include_{{skill.skill.id}}" class="form-check-label">Include</label>
+              </div>
+              <input id="pro_skill_{{skill.skill.id}}" class="data form-control form-control-sm d-inline-block" style="width: 120px;" type="text" size="17" item_id="{{skill.id}}" item_type="et_skill_value" value="{{ skill.die_set }}" />
+            </td>
+            {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
+          {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
-<table id="professional_skills_table" {% if not et.included_professional_skills %}style="display: None;"{% endif %}><tr>
-{% for skill in et.professional_skills %}
-        <td>{{ skill.name }}</td>
-        <td valign="top">
-            <input id="pro_skill_include_{{skill.skill.id}}" class="data" type="checkbox" item_id="{{skill.id}}" item_type="et_skill_include" {% if skill.include %}checked="checked"{% endif %} />
-            <input id="pro_skill_{{skill.skill.id}}" class="data" type="text" size="17" item_id="{{skill.id}}" item_type="et_skill_value" value="{{ skill.die_set }}" />
-        </td>
-        {% if forloop.counter|divisibleby:"3" %}</tr><tr>{% endif %}
-{% endfor %}
-</tr></table>
 {% endif %}
 
 {% if et.custom_skills %}
-<h3>Custom skills</h3>
-<table>
-{% for skill in et.custom_skills %}
-<tr>
-    <td><input id="custom_skill_name_{{skill.skill.id}}" class="data" type="text" item_id="{{skill.id}}" item_type="et_custom_skill_name" value="{{skill.name}}" /></td>
-    <td valign="top">
-        <input id="custom_skill_include_{{skill.id}}" class="data" type="checkbox" item_id="{{skill.id}}" item_type="et_custom_skill_include" {% if skill.include %}checked="checked"{% endif %} />
-        <input id="custom_skill_{{skill.skill.id}}" class="data" type="text" size="17" item_id="{{skill.id}}" item_type="et_custom_skill_value" value="{{ skill.die_set }}" />
-    </td>
-</tr>
-{% endfor %}
-</tr></table>
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 card-title">Custom skills</h3>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-2">
+        <tbody>
+        {% for skill in et.custom_skills %}
+          <tr>
+            <td style="min-width: 200px;">
+              <input id="custom_skill_name_{{skill.skill.id}}" class="data form-control form-control-sm" type="text" item_id="{{skill.id}}" item_type="et_custom_skill_name" value="{{skill.name}}" />
+            </td>
+            <td style="width: 240px;">
+              <div class="form-check form-check-inline">
+                <input id="custom_skill_include_{{skill.id}}" class="data form-check-input" type="checkbox" item_id="{{skill.id}}" item_type="et_custom_skill_include" {% if skill.include %}checked="checked"{% endif %} />
+                <label for="custom_skill_include_{{skill.id}}" class="form-check-label">Include</label>
+              </div>
+              <input id="custom_skill_{{skill.skill.id}}" class="data form-control form-control-sm d-inline-block" style="width: 120px;" type="text" size="17" item_id="{{skill.id}}" item_type="et_custom_skill_value" value="{{ skill.die_set }}" />
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endif %}
 
-<button class="add_custom_skill" et_id="{{ et.id }}">Add custom skill</button>
+<button class="add_custom_skill btn btn-primary btn-sm" et_id="{{ et.id }}">Add custom skill</button>

@@ -446,7 +446,27 @@ class EnemyTemplate(models.Model):
         EnemyNonrandomFeature.create(enemy_template=self, feature_id=feature_id)
         
     def clone(self, owner):
-        name = "Copy of %s" % self.name
+        # Generate a safe name that fits into max_length without DB errors
+        # Reserve space for the prefix 'Copy of ' (8 chars)
+        base = self.name or ""
+        prefix = "Copy of "
+        max_len = EnemyTemplate._meta.get_field('name').max_length or 50
+        # Truncate base so full name fits within max_len
+        avail_for_base = max_len - len(prefix)
+        safe_base = base[:avail_for_base] if avail_for_base > 0 else base[:max_len]
+        name = f"{prefix}{safe_base}"
+        # If there is a uniqueness restriction in practice (not enforced by DB),
+        # attempt to avoid duplicates by appending a numeric suffix within bounds.
+        # Keep this lightweight: only check a few variants.
+        if EnemyTemplate.objects.filter(name=name, owner=owner, ruleset=self.ruleset, race=self.race).exists():
+            for i in range(2, 100):
+                suffix = f" ({i})"
+                avail_for_base_i = max_len - len(prefix) - len(suffix)
+                safe_base_i = base[:avail_for_base_i] if avail_for_base_i > 0 else base[:max_len - len(suffix)]
+                candidate = f"{prefix}{safe_base_i}{suffix}"
+                if not EnemyTemplate.objects.filter(name=candidate, owner=owner, ruleset=self.ruleset, race=self.race).exists():
+                    name = candidate
+                    break
         new = EnemyTemplate(owner=owner, ruleset=self.ruleset, race=self.race, name=name)
         new.movement = self.movement
         new.rank = self.rank

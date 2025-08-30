@@ -92,201 +92,272 @@ $(document).ready(function(){
 });
 </script>
 
-<div> <!-- Buttons -->
-    <form action="{% url 'delete_template' et.id %}" method="post">
-    {% csrf_token %}
-    <div id="delete_template"><input type="submit" value="Delete template" /></div>
-    </form>
+<style>
+/* Hide spinners on number inputs within enemy template page */
+#main_content input[type=number]::-webkit-outer-spin-button,
+#main_content input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#main_content input[type=number] { -moz-appearance: textfield; }
+</style>
 
-    <div id="clone_template_container">
-    <form action="{% url 'clone_template' et.id %}" method="post">
-    {% csrf_token %}
-    <input id="clone_template" type="submit" value="Clone" />
+<!-- Actions -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body d-flex flex-wrap gap-2">
+    <form action="{% url 'delete_template' et.id %}" method="post" class="me-2">
+      {% csrf_token %}
+      <button id="delete_template" type="submit" class="btn btn-outline-danger">Delete template</button>
     </form>
-    </div>
-
-    <div id="generate_enemy_container">
-    <form action="{% url 'generate_enemies' %}" method="post" target="generated">
-    {% csrf_token %}
-    <input name="enemy_template_id_{{et.id}}" type="hidden" value="6">
-    <input style="width: 140px;" type="submit" value="Generate" />
+    <form id="clone_template_container" action="{% url 'clone_template' et.id %}" method="post" class="me-2">
+      {% csrf_token %}
+      <button id="clone_template" type="submit" class="btn btn-outline-secondary">Clone</button>
     </form>
-    </div>
+    <form id="generate_enemy_container" action="{% url 'generate_enemies' %}" method="post" target="generated" class="ms-auto">
+      {% csrf_token %}
+      <input name="enemy_template_id_{{et.id}}" type="hidden" value="6">
+      <button type="submit" class="btn btn-primary" style="min-width:140px;">Generate</button>
+    </form>
+  </div>
 </div>
 
-<h3 style="display: inline;">
-    Enemy details
-    {% if et.starred %}
+<!-- Enemy details -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <h3 class="h5 mb-0">Enemy details</h3>
+      {% if et.starred %}
         <img et_id={{ et.id }} class="star" height="22" width="22" src="{% static 'images/star_filled.png' %}" />
-    {% else %}
+      {% else %}
         <img et_id={{ et.id }} class="star" height="22" width="22" src="{% static 'images/star_empty.png' %}" />
-    {% endif %}
-</h3>
-<span class="generated_amount">(Generated {{ et.generated }} times)</span>
+      {% endif %}
+      <span class="generated_amount text-muted small">(Generated {{ et.generated }} times)</span>
+    </div>
 
-<table><tr>
-    <th>Template name</th>
-    <td><input id="et_{{ et.id }}" class="data" type="text" size="40" item_id="{{ et.id }}" item_type="et_name" value="{{ et.name }}" /></td>
-</tr><tr>
-    <th>Random name list</th>
-    <td id="namelist_cell">
-        <select id="et_namelist" class="data" item_id="{{ et.id }}" item_type="et_namelist">
-            <option value="0" {% if et.namelist == 0 %}selected="selected"{% endif %}>None</option>
-            {% for namelist in namelists %}
-                <option value="{{namelist.id}}" {% if et.namelist.id == namelist.id %}selected="selected"{% endif %}>{{namelist.name}}</option>
-            {% endfor %}
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3"><label for="et_{{ et.id }}" class="form-label mb-0">Template name</label></div>
+      <div class="col-12 col-md-9"><input id="et_{{ et.id }}" class="data form-control" type="text" size="40" item_id="{{ et.id }}" item_type="et_name" value="{{ et.name }}" /></div>
+    </div>
+
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3"><label for="et_namelist" class="form-label mb-0">Random name list</label></div>
+      <div class="col-12 col-md-9" id="namelist_cell">
+        <select id="et_namelist" class="data form-select w-auto d-inline-block" item_id="{{ et.id }}" item_type="et_namelist">
+          <option value="0" {% if et.namelist == 0 %}selected="selected"{% endif %}>None</option>
+          {% for namelist in namelists %}
+            <option value="{{namelist.id}}" {% if et.namelist.id == namelist.id %}selected="selected"{% endif %}>{{namelist.name}}</option>
+          {% endfor %}
         </select>
-        {% if et.namelist %}<a id="namelist_link" href="{% url 'feature_items' et.namelist.id %}" target=_blank>View names</a>{% endif %}
-    </td>
-</tr><tr>
-    <th>Tags</th>
-    <td><div id="tag_container">
-        {% for tag in et.get_tags %}
-            <div class="tag">{{ tag }}
-            <img class="del_tag" src="{% static 'images/del_tag.png' %}"
+        {% if et.namelist %}<a id="namelist_link" class="ms-2" href="{% url 'feature_items' et.namelist.id %}" target=_blank>View names</a>{% endif %}
+      </div>
+    </div>
+
+    <div class="row g-3 align-items-start mb-2">
+      <div class="col-12 col-md-3"><label class="form-label mb-0">Tags</label></div>
+      <div class="col-12 col-md-9">
+        <div id="tag_container" class="d-flex flex-wrap gap-1 mb-1">
+          {% for tag in et.get_tags %}<div class="tag badge bg-secondary">{{ tag }}
+            <img class="del_tag ms-1" src="{% static 'images/del_tag.png' %}"
                  et_id="{{ et.id }}" value="{{ tag }}"
                  onmouseover="this.src='{% static 'images/del_tag_hover.png' %}'"
                  onmouseout="this.src='{% static 'images/del_tag.png' %}'"
                  onmouseup="this.src='{% static 'images/del_tag.png' %}'"
                  onmousedown="this.src='{% static 'images/del_tag_active.png' %}'" />
-            </div>
-        {% endfor %}
+          </div>{% endfor %}
         </div>
         <div id="et_newtag" class="data" type="text" item_id="{{ et.id }}" item_type="et_newtag" style="height: 18px;"></div>
-    </td>
-</tr><tr>
-    <th>Rank</th>
-    <td>
-        <select id="et_rank_{{ et.id }}" class="data" item_id="{{ et.id }}" item_type="et_rank">
-            <option value="1" {% if et.rank == 1 %}selected="selected"{% endif %}>Rabble</option>
-            <option value="2" {% if et.rank == 2 %}selected="selected"{% endif %}>Novice</option>
-            <option value="3" {% if et.rank == 3 %}selected="selected"{% endif %}>Skilled</option>
-            <option value="4" {% if et.rank == 4 %}selected="selected"{% endif %}>Veteran</option>
-            <option value="5" {% if et.rank == 5 %}selected="selected"{% endif %}>Master</option>
-        </select>
-    </td>
-</tr><tr>
-    <th>Race</th>
-    <td><a class="edit_item" href="{% url 'race' et.race.id %}">{{ et.race.name }}</a></td>
-</tr><tr>
-    <th>Cult Rank</th>
-    <td>
-        <select id="et_cult_rank_{{ et.id }}" class="data" item_id="{{ et.id }}" item_type="et_cult_rank">
-            {% if et.is_theist %}
-                <option value="0" {% if et.cult_rank == 0 %}selected="selected"{% endif %}>None</option>
-                <option value="1" {% if et.cult_rank == 1 %}selected="selected"{% endif %}>Lay Member</option>
-                <option value="2" {% if et.cult_rank == 2 %}selected="selected"{% endif %}>Initiate</option>
-                <option value="3" {% if et.cult_rank == 3 %}selected="selected"{% endif %}>Acolyte</option>
-                <option value="4" {% if et.cult_rank == 4 %}selected="selected"{% endif %}>Priest</option>
-                <option value="5" {% if et.cult_rank == 5 %}selected="selected"{% endif %}>High Priest</option>
-            {% else %}
-                <option value="0" {% if et.cult_rank == 0 %}selected="selected"{% endif %}>None</option>
-                <option value="1" {% if et.cult_rank == 1 %}selected="selected"{% endif %}>Common</option>
-                <option value="2" {% if et.cult_rank == 2 %}selected="selected"{% endif %}>Dedicated</option>
-                <option value="3" {% if et.cult_rank == 3 %}selected="selected"{% endif %}>Proven</option>
-                <option value="4" {% if et.cult_rank == 4 %}selected="selected"{% endif %}>Overseer</option>
-                <option value="5" {% if et.cult_rank == 5 %}selected="selected"{% endif %}>Leader</option>
-            {% endif %}
-        </select>
-    </td>
-</tr><tr>
-    <th>Published</th>
-    <td><input id="et_pub_{{ et.id }}" class="data" type="checkbox" item_id="{{ et.id }}" item_type="et_published" {% if et.published %}checked="checked"{% endif %} /></td>
-</tr><tr>
-    <th>Notes</th>
-    <td><textarea id="et_notes_{{ et.id }}" class="data" cols="60" rows="3" item_id="{{ et.id }}" item_type="et_notes">{{ et.notes }}</textarea></td>
-</tr></table>
+      </div>
+    </div>
 
-<table id="stats_and_hp"><tr><td valign="top">
-<table>
-<tr><th colspan="2">Stats</th></tr>
-{% for stat in et.stats %}
-    <tr>
-        <td>{{ stat.name }}</td>
-        <td>
-            <input id="stat_{{stat.id}}" class="data" type="text" size="8" item_id="{{stat.id}}" item_type="et_stat_value" value="{{ stat.die_set }}" />
-        </td>
-    </tr>
-{% endfor %}
-</table>
-{% if et.hit_locations %}
-</td><td valign="top">
-<table>
-<tr><th>D20</th><th>Hit location</th><th>Armor</th></tr>
-{% for hl in et.hit_locations %}
-    <tr>
-        <td>{{ hl.range|safe }}</td>
-        <td>{{ hl.name }}</td>
-        <td>
-            <input id="hl_{{hl.id}}" class="data" type="text" size="10" item_id="{{hl.id}}" item_type="et_hl_armor" value="{{ hl.armor }}" />
-        </td>
-    </tr>
-{% endfor %}
-</table>
-{% endif %}
-</td><td valign="top">
-<table>
-<tr><th colspan="2">Attributes</th></tr>
-<tr>
-    <td>Movement</td>
-    <td><input id="movement_{{et.id}}" class="data" type="text" size="8" item_id="{{et.id}}" item_type="et_movement" value="{{ et.movement }}" /></td>
-</tr>
-<tr>
-    <td>Natural armor</td>
-    <td><input id="et_natural_{{ et.id }}" class="data" type="checkbox" item_id="{{ et.id }}" item_type="et_natural_armor" {% if et.natural_armor %}checked="checked"{% endif %} /></td>
-</tr>
-</table>
-</td></tr></table>
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3"><label for="et_rank_{{ et.id }}" class="form-label mb-0">Rank</label></div>
+      <div class="col-12 col-md-9"><select id="et_rank_{{ et.id }}" class="data form-select w-auto" item_id="{{ et.id }}" item_type="et_rank">
+        <option value="1" {% if et.rank == 1 %}selected="selected"{% endif %}>Rabble</option>
+        <option value="2" {% if et.rank == 2 %}selected="selected"{% endif %}>Novice</option>
+        <option value="3" {% if et.rank == 3 %}selected="selected"{% endif %}>Skilled</option>
+        <option value="4" {% if et.rank == 4 %}selected="selected"{% endif %}>Veteran</option>
+        <option value="5" {% if et.rank == 5 %}selected="selected"{% endif %}>Master</option>
+      </select></div>
+    </div>
+
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3"><span class="form-label mb-0">Race</span></div>
+      <div class="col-12 col-md-9"><a class="edit_item" href="{% url 'race' et.race.id %}">{{ et.race.name }}</a></div>
+    </div>
+
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3"><label for="et_cult_rank_{{ et.id }}" class="form-label mb-0">Cult Rank</label></div>
+      <div class="col-12 col-md-9">
+        <select id="et_cult_rank_{{ et.id }}" class="data form-select w-auto" item_id="{{ et.id }}" item_type="et_cult_rank">
+          {% if et.is_theist %}
+            <option value="0" {% if et.cult_rank == 0 %}selected="selected"{% endif %}>None</option>
+            <option value="1" {% if et.cult_rank == 1 %}selected="selected"{% endif %}>Lay Member</option>
+            <option value="2" {% if et.cult_rank == 2 %}selected="selected"{% endif %}>Initiate</option>
+            <option value="3" {% if et.cult_rank == 3 %}selected="selected"{% endif %}>Acolyte</option>
+            <option value="4" {% if et.cult_rank == 4 %}selected="selected"{% endif %}>Priest</option>
+            <option value="5" {% if et.cult_rank == 5 %}selected="selected"{% endif %}>High Priest</option>
+          {% else %}
+            <option value="0" {% if et.cult_rank == 0 %}selected="selected"{% endif %}>None</option>
+            <option value="1" {% if et.cult_rank == 1 %}selected="selected"{% endif %}>Common</option>
+            <option value="2" {% if et.cult_rank == 2 %}selected="selected"{% endif %}>Dedicated</option>
+            <option value="3" {% if et.cult_rank == 3 %}selected="selected"{% endif %}>Proven</option>
+            <option value="4" {% if et.cult_rank == 4 %}selected="selected"{% endif %}>Overseer</option>
+            <option value="5" {% if et.cult_rank == 5 %}selected="selected"{% endif %}>Leader</option>
+          {% endif %}
+        </select>
+      </div>
+    </div>
+
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3"><label for="et_pub_{{ et.id }}" class="form-label mb-0">Published</label></div>
+      <div class="col-12 col-md-9">
+        <div class="form-check">
+          <input id="et_pub_{{ et.id }}" class="data form-check-input" type="checkbox" item_id="{{ et.id }}" item_type="et_published" {% if et.published %}checked="checked"{% endif %} />
+          <label class="form-check-label" for="et_pub_{{ et.id }}">Published</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 align-items-start">
+      <div class="col-12 col-md-3"><label for="et_notes_{{ et.id }}" class="form-label mb-0">Notes</label></div>
+      <div class="col-12 col-md-9"><textarea id="et_notes_{{ et.id }}" class="data form-control" cols="60" rows="3" item_id="{{ et.id }}" item_type="et_notes">{{ et.notes }}</textarea></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-lg-4">
+    <div class="card shadow-sm mb-3 h-100"><div class="card-body p-3">
+      <h3 class="h6 card-title">Stats</h3>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <tbody>
+          {% for stat in et.stats %}
+            <tr>
+              <td style="width: 50%">{{ stat.name }}</td>
+              <td><input id="stat_{{stat.id}}" class="data form-control form-control-sm" type="text" size="8" item_id="{{stat.id}}" item_type="et_stat_value" value="{{ stat.die_set }}" /></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
+
+  {% if et.hit_locations %}
+  <div class="col-12 col-lg-4">
+    <div class="card shadow-sm mb-3 h-100"><div class="card-body p-3">
+      <h3 class="h6 card-title">Hit locations</h3>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>D20</th><th>Hit location</th><th>Armor</th></tr></thead>
+          <tbody>
+          {% for hl in et.hit_locations %}
+            <tr>
+              <td>{{ hl.range|safe }}</td>
+              <td>{{ hl.name }}</td>
+              <td style="max-width: 10rem;"><input id="hl_{{hl.id}}" class="data form-control form-control-sm" type="text" size="10" item_id="{{hl.id}}" item_type="et_hl_armor" value="{{ hl.armor }}" /></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
+  {% endif %}
+
+  <div class="col-12 col-lg-4">
+    <div class="card shadow-sm mb-3 h-100"><div class="card-body p-3">
+      <h3 class="h6 card-title">Attributes</h3>
+      <div class="row g-2 align-items-center mb-2">
+        <div class="col-6">Movement</div>
+        <div class="col-6"><input id="movement_{{et.id}}" class="data form-control form-control-sm" type="text" size="8" item_id="{{et.id}}" item_type="et_movement" value="{{ et.movement }}" /></div>
+      </div>
+      <div class="form-check">
+        <input id="et_natural_{{ et.id }}" class="data form-check-input" type="checkbox" item_id="{{ et.id }}" item_type="et_natural_armor" {% if et.natural_armor %}checked="checked"{% endif %} />
+        <label class="form-check-label" for="et_natural_{{ et.id }}">Natural armor</label>
+      </div>
+    </div></div>
+  </div>
+</div>
 
 {% include 'enemy_template_cults.html' %}
 
-<div> <!-- Additional Features -->
-    <h3>Additional features</h3>
+<!-- Additional Features -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 card-title">Additional features</h3>
     {% if et.additional_features %}
-        <table>
-<tr><th>Feature</th><th>Probability</th><th></th><th></th></tr>
-{% for f in et.additional_features %}
-    <tr>
-        <td>{{ f.name }}</td>
-        <td><input id="et_feature_{{f.id}}" class="data" type="text" size="30" item_id="{{f.id}}" item_type="et_feature_prob" value="{{ f.probability }}" />%</td>
-        <td><img src="{% static 'minus.png' %}" width="23" height="23" class="del_item" item_id="{{ f.id }}" item_type="et_additional_feature" /></td>
-        <td><a href="{% url 'feature_items' f.feature_list.id %}">View items</a></td>
-    </tr>
-{% endfor %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-2">
+          <thead><tr><th>Feature</th><th>Probability</th><th></th><th></th></tr></thead>
+          <tbody>
+          {% for f in et.additional_features %}
+            <tr>
+              <td>{{ f.name }}</td>
+              <td style="max-width: 12rem;">
+                <div class="input-group input-group-sm">
+                  <input id="et_feature_{{f.id}}" class="data form-control" type="number" step="0.01" item_id="{{f.id}}" item_type="et_feature_prob" value="{{ f.probability }}" />
+                  <span class="input-group-text">%</span>
+                </div>
+              </td>
+              <td><img src="{% static 'minus.png' %}" width="23" height="23" class="del_item" item_id="{{ f.id }}" item_type="et_additional_feature" /></td>
+              <td><a class="btn btn-link btn-sm p-0" href="{% url 'feature_items' f.feature_list.id %}">View items</a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
         </table>
+      </div>
     {% endif %}
-    <select id="additional_feature_options">
-            <option value="0">Select feature</option>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <select id="additional_feature_options" class="form-select w-auto">
+        <option value="0">Select feature</option>
         {% for feature_list in additional_feature_lists %}
-            <option value="{{ feature_list.id }}">{{ feature_list.name }}</option>
+          <option value="{{ feature_list.id }}">{{ feature_list.name }}</option>
         {% endfor %}
-    </select>
-    <button class="add_additional_feature" object_type="et" parent_id="{{ et.id }}">Add</button>
+      </select>
+      <button class="add_additional_feature btn btn-outline-primary btn-sm" object_type="et" parent_id="{{ et.id }}">Add</button>
+    </div>
+  </div>
 </div>
 
-<div> <!-- Non-random features -->
-    <h3>Non-random features</h3>
+<!-- Non-random features -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body p-3">
+    <h3 class="h6 card-title">Non-random features</h3>
     {% if et.nonrandom_features %}
-        <table>
-            <tr><th>List</th><th>Feature</th><th></th></tr>
-        {% for feature in et.nonrandom_features %}
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-2">
+          <thead><tr><th>List</th><th>Feature</th><th></th></tr></thead>
+          <tbody>
+          {% for feature in et.nonrandom_features %}
             <tr>
-                <td>{{ feature.feature.feature_list.name }}</td>
-                <td>{{ feature.feature.name }}</td>
-                <td><img src="{% static 'minus.png' %}" width="23" height="23" class="del_item" item_id="{{ feature.id }}" item_type="et_nonrandom_feature" /></td>
+              <td>{{ feature.feature.feature_list.name }}</td>
+              <td>{{ feature.feature.name }}</td>
+              <td><img src="{% static 'minus.png' %}" width="23" height="23" class="del_item" item_id="{{ feature.id }}" item_type="et_nonrandom_feature" /></td>
             </tr>
-        {% endfor %}
+          {% endfor %}
+          </tbody>
         </table>
+      </div>
     {% endif %}
-    <select id="nonrandom_feature_list_options" size="4" style="width: 220px">
-        {% for feature_list in additional_feature_lists %}
+    <div class="d-flex gap-2 align-items-start flex-wrap">
+      <div>
+        <label for="nonrandom_feature_list_options" class="form-label">Feature list</label>
+        <select id="nonrandom_feature_list_options" size="4" class="form-select" style="width: 220px">
+          {% for feature_list in additional_feature_lists %}
             <option value="{{ feature_list.id }}">{{ feature_list.name }}</option>
-        {% endfor %}
-    </select>
-    <select id="nonrandom_feature_options" size="4" style="width: 550px">
-        <option>&lt;Select feature list first&gt;</option>
-    </select>
-    <button id="add_nonrandom_feature" et_id="{{ et.id }}">Add</button>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="flex-grow-1">
+        <label for="nonrandom_feature_options" class="form-label">Features</label>
+        <select id="nonrandom_feature_options" size="4" class="form-select" style="min-width: 260px; width: 100%; max-width: 550px;">
+          <option>&lt;Select feature list first&gt;</option>
+        </select>
+      </div>
+      <div class="align-self-end">
+        <button id="add_nonrandom_feature" class="btn btn-primary btn-sm" et_id="{{ et.id }}">Add</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% include 'enemy_template_skills.html' %}

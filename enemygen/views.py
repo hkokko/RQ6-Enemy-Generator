@@ -363,7 +363,27 @@ def delete_template(request, template_id):
 @login_required
 def clone_template(request, template_id):
     et = EnemyTemplate.objects.get(id=template_id)
-    new = et.clone(request.user)
+    try:
+        new = et.clone(request.user)
+        # Inform user if the name was auto-truncated to fit DB limits
+        from django.contrib import messages
+        max_len = EnemyTemplate._meta.get_field('name').max_length or 50
+        proposed = f"Copy of {et.name}"
+        if len(proposed) > max_len and new.name.startswith("Copy of "):
+            messages.info(request, f"Cloned as '{new.name}' (name truncated to fit length limit)")
+    except Exception as exc:
+        # Provide a nice validation message if cloning fails (e.g., name too long)
+        from django.contrib import messages
+        msg = "Could not clone this template."
+        # Tailor message for DataError or value issues
+        try:
+            from django.db import DataError
+        except Exception:
+            DataError = Exception
+        if isinstance(exc, DataError) or "Data too long" in str(exc):
+            msg = "Could not clone: generated name would be too long. Please shorten the original name and try again."
+        messages.error(request, msg)
+        return redirect(enemy_template, et.id)
     return redirect(enemy_template, new.id)
 
 
