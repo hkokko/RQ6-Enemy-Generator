@@ -5,66 +5,80 @@
 
 {% block content %}
 
-<div id="clone_party_container">
-<form action="{% url 'clone_party' party.id %}" method="post">
-{% csrf_token %}
-<input id="clone_party" type="submit" value="Clone" />
-</form>
+<!-- Actions -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body d-flex flex-wrap gap-2">
+    <form action="{% url 'clone_party' party.id %}" method="post" class="me-2">
+      {% csrf_token %}
+      <button id="clone_party" type="submit" class="btn btn-outline-secondary btn-sm">Clone</button>
+    </form>
+    <form action="{% url 'generate_party' %}" method="post" target="_blank" class="ms-auto">
+      {% csrf_token %}
+      <input name="party_id" type="hidden" value="{{ party.id }}">
+      <input name="dont_increment" type="hidden" value="1">
+      <button type="submit" class="btn btn-primary btn-sm" style="min-width:140px;">Generate</button>
+    </form>
+  </div>
 </div>
 
-<div id="generate_party_container">
-<form action="{% url 'generate_party' %}" method="post" target="_blank">
-{% csrf_token %}
-<input name="party_id" type="hidden" value="{{ party.id }}">
-<input name="dont_increment" type="hidden" value="1">
-<input style="width: 140px;" type="submit" value="Generate" />
-</form>
-</div>
+<div class="card mb-3"><div class="card-body p-3">
+  <h2 class="h5 card-title">Party</h2>
+  <div class="row g-3 align-items-start">
+    <div class="col-12 col-md-6">
+      <label class="form-label mb-0">Name</label>
+      <div class="form-control-plaintext">{{ party.name }}</div>
+    </div>
+    <div class="col-12">
+      <label class="form-label mb-0">Tags</label>
+      <div id="tag_container" class="d-flex flex-wrap gap-1">
+        {% for tag in party.get_tags %}<div class="badge bg-secondary">{{ tag }}</div>{% endfor %}
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label mb-0">Owner</label>
+      <div class="form-control-plaintext">{{ party.owner.username }}</div>
+    </div>
+    <div class="col-12">
+      <label class="form-label mb-0">Notes</label>
+      <div class="border rounded p-2 bg-light">{{ party.notes|markdown }}</div>
+    </div>
+  </div>
+</div></div>
 
-<h2>Party</h2>
-<table><tr>
-    <th>Name</th>
-    <td>{{ party.name }}</td>
-</tr><tr>
-    <th>Tags</th>
-    <td><div id="tag_container">
-        {% for tag in party.get_tags %}<div class="tag">{{ tag }}</div>{% endfor %}
-        </div>
-    </td>
-</tr><tr>
-    <th>Owner</th>
-    <td>{{ party.owner.username }}</td>
-</tr><tr>
-    <th>Notes</th>
-    <td>{{ party.notes|markdown }}</td>
-</tr></table>
-
-<h3>Templates</h3>
-<table>
-<tr><th>Template</th><th>Amount</th></tr>
-{% for ts in party.template_specs %}
+<h3 class="h5">Templates</h3>
+<div class="table-responsive">
+<table class="table table-sm align-middle">
+  <thead><tr><th>Template</th><th>Amount</th></tr></thead>
+  <tbody>
+  {% for ts in party.template_specs %}
     <tr>
-        <td><a href="{% url 'enemy_template' ts.template.id %}">{{ ts.template.name }}</a></td>
-        <td>{{ ts.amount }}</td>
+      <td><a href="{% url 'enemy_template' ts.template.id %}">{{ ts.template.name }}</a></td>
+      <td>{{ ts.amount }}</td>
     </tr>
-{% endfor %}
+  {% endfor %}
+  </tbody>
 </table>
-
-<div> <!-- Additional Features -->
-    {% if party.additional_features %}
-        <h3>Additional features</h3>
-        <table>
-<tr><th>Feature</th><th>Probability</th><th></th></tr>
-{% for f in party.additional_features %}
-    <tr>
-        <td>{{ f.name }}</td>
-        <td>{{ f.probability }}%</td>
-        <td><a href="{% url 'feature_items' f.feature_list.id %}">View items</a></td>
-    </tr>
-{% endfor %}
-        </table>
-    {% endif %}
 </div>
 
+<!-- Additional Features -->
+{% if party.additional_features %}
+  <div class="card mt-3"><div class="card-body p-3">
+    <h3 class="h6 card-title">Additional features</h3>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Feature</th><th>Probability</th><th></th></tr></thead>
+        <tbody>
+        {% for f in party.additional_features %}
+          <tr>
+            <td>{{ f.name }}</td>
+            <td>{{ f.probability }}%</td>
+            <td><a class="btn btn-link btn-sm p-0" href="{% url 'feature_items' f.feature_list.id %}">View items</a></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div></div>
+{% endif %}
 
 {% endblock %}
