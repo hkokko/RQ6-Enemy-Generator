@@ -327,6 +327,18 @@ $(document).ready(function () {
         apply_notes_to_templates(event);
     })
 
+    // Auto-populate features on initial load if a feature list is already selected
+    try {
+        var flSel = document.getElementById('nonrandom_feature_list_options');
+        if (flSel && flSel.options && flSel.options.length > 0) {
+            var initialVal = flSel.value || (flSel.options[flSel.selectedIndex] ? flSel.options[flSel.selectedIndex].value : '');
+            if (initialVal !== '' && initialVal !== '0') {
+                // Trigger once to populate the features list
+                try { get_feature_list_items({ target: flSel }); } catch (e) {}
+            }
+        }
+    } catch (e) {}
+
     $('#nonrandom_feature_list_options').change(function (event) {
         get_feature_list_items(event);
     });

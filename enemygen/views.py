@@ -234,7 +234,18 @@ def account(request):
 
 def feature_items(request, feature_id):
     context = get_context(request)
-    context['feature'] = get_object_or_404(AdditionalFeatureList, id=feature_id)
+    feature = get_object_or_404(AdditionalFeatureList, id=feature_id)
+    context['feature'] = feature
+    # Provide all feature lists for the left-hand selector
+    try:
+        # If ruleset is present in context, prefer its feature lists
+        rs = context.get('ruleset', None)
+        if rs:
+            context['additional_feature_lists'] = rs.additionalfeaturelist_set.all().order_by('name')
+        else:
+            context['additional_feature_lists'] = AdditionalFeatureList.objects.all().order_by('name')
+    except Exception:
+        context['additional_feature_lists'] = AdditionalFeatureList.objects.all().order_by('name')
     return render(request, 'feature_items.html', context)
 
 
