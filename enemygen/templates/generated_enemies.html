@@ -240,7 +240,7 @@ div#png_export{
             <tr class="oddrow"> <td>Action Points</td>  <td>{{ enemy.attributes.action_points }}</td></tr>
             <tr class="evenrow"><td>Spirit Damage</td>  <td>{{ enemy.attributes.spirit_damage }}</td></tr>
             <tr class="oddrow"> <td>Magic Points</td>   <td>{{ enemy.attributes.magic_points }}</td></tr>
-            <tr class="evenrow"><td>Strike Rank</td>    <td>{{ enemy.attributes.strike_rank }}</td></tr>
+            <tr class="evenrow"><td>Initiative Bonus</td>    <td>{{ enemy.attributes.strike_rank }}</td></tr>
             <tr class="oddrow"><td>Intensity</td>       <td>{{ enemy.attributes.spirit_intensity }}</td></tr>
         </table>
     </td></tr>
@@ -374,7 +374,7 @@ div#png_export{
             <tr class="evenrow"><td>Damage&nbsp;Modifier</td><td>{{ enemy.attributes.damage_modifier }}</td></tr>
             <tr class="oddrow"> <td>Magic&nbsp;Points</td>   <td>{{ enemy.attributes.magic_points }}</td></tr>
             <tr class="evenrow"><td>Movement</td>       <td>{{ enemy.attributes.movement }}</td></tr>
-            <tr class="oddrow"> <td>Strike&nbsp;Rank</td>    <td>{{ enemy.attributes.strike_rank }}</td></tr>
+            <tr class="oddrow"> <td>Initiative&nbsp;Bonus</td>    <td>{{ enemy.attributes.strike_rank }}</td></tr>
             <tr class="evenrow"><td>Cult&nbsp;rank</td>      <td>{{ enemy.cult_rank }}</td></tr>
             <tr class="oddrow">
                 {% if enemy.cults|length == 1 and enemy.cults.0.name|length <= 27 %}

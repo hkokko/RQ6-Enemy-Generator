@@ -17403,7 +17403,7 @@
         "fields": {
             "default_detail": "",
             "type": "mysticism",
-            "name": "Enhance: Strike Rank",
+            "name": "Enhance: Initiative Bonus",
             "detail": false
         }
     },
@@ -19409,7 +19409,7 @@
         "pk": 67,
         "model": "enemygen.additionalfeatureitem",
         "fields": {
-            "name": "Joint Rot - Strike Rank -1 per attack. At 0 joints freeze",
+            "name": "Joint Rot - Initiative Bonus -1 per attack. At 0 joints freeze",
             "feature_list": 2
         }
     },
@@ -19929,7 +19929,7 @@
         "pk": 139,
         "model": "enemygen.additionalfeatureitem",
         "fields": {
-            "name": "Boost Attribute - Strike Rank by value of intensity",
+            "name": "Boost Attribute - Initiative Bonus by value of intensity",
             "feature_list": 5
         }
     },
