@@ -1,23 +1,62 @@
 {% load static %}
-<div id="cults_container">
-<h3>Cults</h3>
-Amount: 
-<input id="et_cults_{{ et.id }}" class="data" size="6" type="text" item_id="{{ et.id }}" item_type="et_cult_amount" value="{{ et.cult_amount }}" /><br>
-<table>
-<tr><th>Cult</th><th>Prob.</th><th></th></tr>
-{% for cult in et.cults %}
-<tr>
-    <td><a href="{% url 'enemy_template' cult.cult.id %}">{{ cult.name }}</a></td>
-    <td><input id="cult_{{cult.id}}" class="data number" type="number" min="0" max="9999" item_id="{{cult.id}}" parent_id="{{et.id}}" item_type="et_cult_prob" value="{{ cult.probability }}" /></td>
-    <td><img src="{% static 'minus.png' %}" width="16" height="16" class="del_item" item_id="{{ cult.id }}" item_type="et_cult" /></td>
-</tr>
-{% endfor %}
+<style>
+/* Hide spinners on number inputs within cults table */
+#cults_container input[type=number]::-webkit-outer-spin-button,
+#cults_container input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+#cults_container input[type=number] { -moz-appearance: textfield; }
+</style>
+<div id="cults_container" class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h3 class="h5 card-title">Cults</h3>
+    <div class="row g-3 align-items-end mb-3">
+      <div class="col-auto">
+        <label for="et_cults_{{ et.id }}" class="form-label mb-0">Amount</label>
+      </div>
+      <div class="col-auto">
+        <input id="et_cults_{{ et.id }}" class="data form-control form-control-sm d-inline-block" style="width: 6rem;" type="text" item_id="{{ et.id }}" item_type="et_cult_amount" value="{{ et.cult_amount }}" />
+      </div>
+    </div>
 
-</table>
-<select multiple id="cult_options" name="cult_options" size="4">
-    {% for cult in cult_options %}
-        <option value="{{ cult.id }}">{{ cult.name }}</option>
-    {% endfor %}
-</select>
-<button id="add_cult" et_id="{{ et.id }}">Add cult(s)</button>
+    <div class="table-responsive mb-3">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Cult</th>
+            <th scope="col" style="width: 120px;">Prob.</th>
+            <th scope="col" style="width: 32px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for cult in et.cults %}
+          <tr>
+            <td><a href="{% url 'enemy_template' cult.cult.id %}">{{ cult.name }}</a></td>
+            <td style="max-width:140px;">
+              <input id="cult_{{cult.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" item_id="{{cult.id}}" parent_id="{{et.id}}" item_type="et_cult_prob" value="{{ cult.probability }}" />
+            </td>
+            <td class="text-end">
+              <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item" item_id="{{ cult.id }}" item_type="et_cult" alt="Delete" />
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row g-3 align-items-start">
+      <div class="col-12 col-md-8">
+        <label for="cult_options" class="form-label">Add from available cults</label>
+        <select multiple id="cult_options" name="cult_options" size="6" class="form-select">
+          {% for cult in cult_options %}
+            <option value="{{ cult.id }}">{{ cult.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-4 d-flex align-items-end">
+        <button id="add_cult" et_id="{{ et.id }}" class="btn btn-primary">Add cult(s)</button>
+      </div>
+    </div>
+  </div>
 </div>

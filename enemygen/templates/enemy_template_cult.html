@@ -6,74 +6,106 @@
 
 <script>
 $(document).ready(function(){
+  // On initial load, collapse the Folk Spells inner content while keeping the header visible
+  if ($('#folk_spells_container').length && $('#folk_spells_container').is(':visible')) {
+    $('#folk_spells_container_inner').hide();
+  }
+  // Also collapse Theism inner content on entry (unconditionally), with a microtask re-hide
+  $('#theism_spells_container_inner').hide();
+  setTimeout(function(){ $('#theism_spells_container_inner').hide(); }, 0);
+  // Collapse Sorcery, Mysticism, and Spirits inner contents on entry as well
+  $('#sorcery_spells_container_inner').hide();
+  setTimeout(function(){ $('#sorcery_spells_container_inner').hide(); }, 0);
+  $('#mysticism_spells_container_inner').hide();
+  setTimeout(function(){ $('#mysticism_spells_container_inner').hide(); }, 0);
+  $('#spirits_container_inner').hide();
+  setTimeout(function(){ $('#spirits_container_inner').hide(); }, 0);
   $('#folk_spells_header').click(function(event){
     $('#folk_spells_container_inner').toggle();
   });
-
   $('#theism_spells_header').click(function(event){
     $('#theism_spells_container_inner').toggle();
   });
-
   $('#sorcery_spells_header').click(function(event){
     $('#sorcery_spells_container_inner').toggle();
   });
-
   $('#mysticism_spells_header').click(function(event){
     $('#mysticism_spells_container_inner').toggle();
   });
-
   $('#spirits_header').click(function(event){
     $('#spirits_container_inner').toggle();
   });
 });
 </script>
 
-<div> <!-- Buttons -->
-    <form action="{% url 'delete_template' et.id %}" method="post">
-    {% csrf_token %}
-    <div id="delete_template"><input type="submit" value="Delete template" /></div>
+<!-- Actions -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body d-flex flex-wrap gap-2">
+    <form action="{% url 'delete_template' et.id %}" method="post" class="me-2">
+      {% csrf_token %}
+      <button id="delete_template" type="submit" class="btn btn-outline-danger">Delete template</button>
     </form>
-
-    <div id="clone_template_container">
-    <form action="{% url 'clone_template' et.id %}" method="post">
-    {% csrf_token %}
-    <input id="clone_template" type="submit" value="Clone" />
+    <form id="clone_template_container" action="{% url 'clone_template' et.id %}" method="post" class="me-2">
+      {% csrf_token %}
+      <button id="clone_template" type="submit" class="btn btn-outline-secondary">Clone</button>
     </form>
-    </div>
-
-    <div id="generate_enemy_container">
-    <form action="{% url 'generate_enemies' %}" method="post" target="generated">
-    {% csrf_token %}
-    <input name="enemy_template_id_{{et.id}}" type="hidden" value="6">
-    <input name="dont_increment" type="hidden" value="1">
-    <input style="width: 140px;" type="submit" value="Generate" />
+    <form id="generate_enemy_container" action="{% url 'generate_enemies' %}" method="post" target="generated" class="ms-auto">
+      {% csrf_token %}
+      <input name="enemy_template_id_{{et.id}}" type="hidden" value="6">
+      <input name="dont_increment" type="hidden" value="1">
+      <button type="submit" class="btn btn-primary" style="min-width:140px;">Generate</button>
     </form>
-    </div>
+  </div>
 </div>
 
-<h3>Cult details</h3>
-<table><tr>
-    <th>Template name</th>
-    <td><input id="et_{{ et.id }}" class="data" type="text" size="40" item_id="{{ et.id }}" item_type="et_name" value="{{ et.name }}" /></td>
-</tr><tr>
-    <th>Cult Rank</th>
-    <td>
-        <select id="et_cult_rank_{{ et.id }}" class="data" item_id="{{ et.id }}" item_type="et_cult_rank">
-            <option value="0" {% if et.cult_rank == 0 %}selected="selected"{% endif %}>None</option>
-            <option value="1" {% if et.cult_rank == 1 %}selected="selected"{% endif %}>Common</option>
-            <option value="2" {% if et.cult_rank == 2 %}selected="selected"{% endif %}>Dedicated</option>
-            <option value="3" {% if et.cult_rank == 3 %}selected="selected"{% endif %}>Proven</option>
-            <option value="4" {% if et.cult_rank == 4 %}selected="selected"{% endif %}>Overseer</option>
-            <option value="5" {% if et.cult_rank == 5 %}selected="selected"{% endif %}>Leader</option>
+<!-- Cult details -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h3 class="h5 card-title">Cult details</h3>
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3">
+        <label for="et_{{ et.id }}" class="form-label mb-0">Template name</label>
+      </div>
+      <div class="col-12 col-md-9">
+        <input id="et_{{ et.id }}" class="data form-control" type="text" size="40" item_id="{{ et.id }}" item_type="et_name" value="{{ et.name }}" />
+      </div>
+    </div>
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3">
+        <label for="et_cult_rank_{{ et.id }}" class="form-label mb-0">Cult Rank</label>
+      </div>
+      <div class="col-12 col-md-9">
+        <select id="et_cult_rank_{{ et.id }}" class="data form-select" item_id="{{ et.id }}" item_type="et_cult_rank">
+          <option value="0" {% if et.cult_rank == 0 %}selected="selected"{% endif %}>None</option>
+          <option value="1" {% if et.cult_rank == 1 %}selected="selected"{% endif %}>Common</option>
+          <option value="2" {% if et.cult_rank == 2 %}selected="selected"{% endif %}>Dedicated</option>
+          <option value="3" {% if et.cult_rank == 3 %}selected="selected"{% endif %}>Proven</option>
+          <option value="4" {% if et.cult_rank == 4 %}selected="selected"{% endif %}>Overseer</option>
+          <option value="5" {% if et.cult_rank == 5 %}selected="selected"{% endif %}>Leader</option>
         </select>
-    </td>
-</tr><tr>
-    <th>Published</th>
-    <td><input id="et_pub_{{ et.id }}" class="data" type="checkbox" item_id="{{ et.id }}" item_type="et_published" {% if et.published %}checked="checked"{% endif %} /></td>
-</tr><tr>
-    <th>Notes</th>
-    <td><textarea id="et_notes_{{ et.id }}" class="data" cols="60" rows="3" item_id="{{ et.id }}" item_type="et_notes">{{ et.notes }}</textarea></td>
-</tr></table>
+      </div>
+    </div>
+    <div class="row g-3 align-items-center mb-2">
+      <div class="col-12 col-md-3">
+        <label for="et_pub_{{ et.id }}" class="form-label mb-0">Published</label>
+      </div>
+      <div class="col-12 col-md-9">
+        <div class="form-check">
+          <input id="et_pub_{{ et.id }}" class="data form-check-input" type="checkbox" item_id="{{ et.id }}" item_type="et_published" {% if et.published %}checked="checked"{% endif %} />
+          <label class="form-check-label" for="et_pub_{{ et.id }}">Published</label>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3 align-items-start">
+      <div class="col-12 col-md-3">
+        <label for="et_notes_{{ et.id }}" class="form-label mb-0">Notes</label>
+      </div>
+      <div class="col-12 col-md-9">
+        <textarea id="et_notes_{{ et.id }}" class="data form-control" cols="60" rows="3" item_id="{{ et.id }}" item_type="et_notes">{{ et.notes }}</textarea>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% include 'enemy_template_spells.html' %}
 

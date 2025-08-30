@@ -1,231 +1,340 @@
 {% load static %}
-&nbsp;
-<div id="folk_spells_container" {% if not et.is_folk_magician %} style="display: none; " {% endif %}>
-    <span id="folk_spells_header" style="cursor: pointer;"><h3 style="display: inline">Folk Spells </h3><span style="font-size:9px">Click to show/hide</span></span>
-    &nbsp;
-    <div id="folk_spells_container_inner">
-        Amount:
-        <input id="et_folk_spells_{{ et.id }}" class="data" size="6" type="text" item_id="{{ et.id }}" item_type="et_folk_spell_amount"
-            value="{{ et.folk_spell_amount }}" /><br>
-        <table>
+<style>
+/* Hide spinners on number inputs within spell containers (WebKit browsers) */
+#folk_spells_container_inner input[type=number]::-webkit-outer-spin-button,
+#folk_spells_container_inner input[type=number]::-webkit-inner-spin-button,
+#theism_spells_container_inner input[type=number]::-webkit-outer-spin-button,
+#theism_spells_container_inner input[type=number]::-webkit-inner-spin-button,
+#sorcery_spells_container_inner input[type=number]::-webkit-outer-spin-button,
+#sorcery_spells_container_inner input[type=number]::-webkit-inner-spin-button,
+#mysticism_spells_container_inner input[type=number]::-webkit-outer-spin-button,
+#mysticism_spells_container_inner input[type=number]::-webkit-inner-spin-button,
+#spirits_container_inner input[type=number]::-webkit-outer-spin-button,
+#spirits_container_inner input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* Hide spinners on Firefox */
+#folk_spells_container_inner input[type=number],
+#theism_spells_container_inner input[type=number],
+#sorcery_spells_container_inner input[type=number],
+#mysticism_spells_container_inner input[type=number],
+#spirits_container_inner input[type=number] {
+  -moz-appearance: textfield;
+}
+</style>
+
+<div id="folk_spells_container" class="card shadow-sm mb-3" {% if not et.is_folk_magician %} style="display: none; " {% endif %}>
+  <div class="card-body">
+    <span id="folk_spells_header" style="cursor: pointer;">
+      <h3 class="h5 card-title d-inline">Folk Spells</h3>
+      <span class="text-muted small">Click to show/hide</span>
+    </span>
+
+    <div id="folk_spells_container_inner" class="mt-2">
+      <div class="row g-3 align-items-end mb-2">
+        <div class="col-auto">
+          <label for="et_folk_spells_{{ et.id }}" class="form-label mb-0">Amount</label>
+        </div>
+        <div class="col-auto">
+          <input id="et_folk_spells_{{ et.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ et.id }}" item_type="et_folk_spell_amount" value="{{ et.folk_spell_amount }}" />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-2">
+          <thead>
             <tr>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
+              <th>Spell</th>
+              <th>Prob.</th>
+              <th>Spell</th>
+              <th>Prob.</th>
+              <th>Spell</th>
+              <th>Prob.</th>
+              <th>Spell</th>
+              <th>Prob.</th>
             </tr>
+          </thead>
+          <tbody>
+            <tr>
             {% for spell in folk_spells %}
-            <td>{% if not spell.custom %}
+            <td>
+              {% if not spell.custom %}
                 {{ spell.name }}
+              {% else %}
+                <input autocomplete="off" id="custom_spell_name_{{spell.id}}" class="data form-control form-control-sm d-inline-block" type="text" size="18" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_name" value="{{ spell.name }}" />
+              {% endif %}
+              {% if spell.detail %}
+                <input id="spell_detail_{{spell.id}}" class="data form-control form-control-sm d-inline-block ms-1" type="text" size="10" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_spell_detail" value="{{ spell.detail_text }}" />
+              {% endif %}
+            </td>
+            <td>
+              {% if not spell.custom %}
+                <input id="spell_{{spell.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_spell_prob" value="{{ spell.probability }}" />
+              {% else %}
+                <input id="custom_spell_{{spell.id}}" class="data number form-control form-control-sm d-inline-block" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
+                <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item ms-1" item_id="{{ spell.id }}" item_type="et_custom_spell" alt="Delete" />
+              {% endif %}
+            </td>
+            {% if not forloop.first and forloop.counter|divisibleby:"4" %}
+            </tr><tr>
+            {% endif %}
+            {% endfor %}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button class="add_custom_spell btn btn-primary" et_id="{{ et.id }}" type="folk">Add custom spell</button>
+    </div>
+  </div>
+</div>
+
+<div id="theism_spells_container" class="card shadow-sm mb-3" {% if not et.is_theist %} style="display: none; " {% endif %}>
+  <div class="card-body">
+    <span id="theism_spells_header" style="cursor: pointer;">
+      <h3 class="h5 card-title d-inline">Theism Spells</h3>
+      <span class="text-muted small">Click to show/hide</span>
+    </span>
+
+    <div id="theism_spells_container_inner" class="mt-2">
+      <div class="row g-3 align-items-end mb-2">
+        <div class="col-auto">
+          <label for="et_theism_spells_{{ et.id }}" class="form-label mb-0">Amount</label>
+        </div>
+        <div class="col-auto">
+          <input id="et_theism_spells_{{ et.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ et.id }}" item_type="et_theism_spell_amount" value="{{ et.theism_spell_amount }}" />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-2">
+          <thead>
+            <tr>
+              <th>Spell</th>
+              <th>Prob.</th>
+              <th>Spell</th>
+              <th>Prob.</th>
+              <th>Spell</th>
+              <th>Prob.</th>
+              <th>Spell</th>
+              <th>Prob.</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+            {% for spell in theism_spells %}
+              <td>
+                {% if not spell.custom %}
+                  {{ spell.name }}
                 {% else %}
-                <input autocomplete="off" id="custom_spell_name_{{spell.id}}" class="data" type="text" size="18" item_id="{{spell.id}}"
-                    parent_id="{{et.id}}" item_type="et_custom_spell_name" value="{{ spell.name }}" />
+                  <input autocomplete="off" id="custom_spell_name_{{spell.id}}" class="data form-control form-control-sm d-inline-block" type="text" size="18" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_name" value="{{ spell.name }}" />
                 {% endif %}
                 {% if spell.detail %}
-                <input id="spell_detail_{{spell.id}}" class="data" type="text" size="10" item_id="{{spell.id}}" parent_id="{{et.id}}"
-                    item_type="et_spell_detail" value="{{ spell.detail_text }}" />
+                  <input id="spell_detail_{{spell.id}}" class="data form-control form-control-sm d-inline-block ms-1" type="text" size="10" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_spell_detail" value="{{ spell.detail_text }}" />
                 {% endif %}
-            </td>
-            <td>{% if not spell.custom %}
-                <input id="spell_{{spell.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}"
-                    item_type="et_spell_prob" value="{{ spell.probability }}" />
+              </td>
+              <td>
+                {% if not spell.custom %}
+                  <input id="spell_{{spell.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_spell_prob" value="{{ spell.probability }}" />
                 {% else %}
-                <input id="custom_spell_{{spell.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spell.id}}"
-                    parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
-                <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item" item_id="{{ spell.id }}" item_type="et_custom_spell" />
+                  <input id="custom_spell_{{spell.id}}" class="data number form-control form-control-sm d-inline-block" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
+                  <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item ms-1" item_id="{{ spell.id }}" item_type="et_custom_spell" alt="Delete" />
                 {% endif %}
-            </td>
-            {% if not forloop.first and forloop.counter|divisibleby:"4" %}</tr>
-            <tr>{% endif %}
-                {% endfor %}
+              </td>
+              {% if not forloop.first and forloop.counter|divisibleby:"4" %}
+            </tr><tr>
+              {% endif %}
+            {% endfor %}
             </tr>
+          </tbody>
         </table>
-        <button class="add_custom_spell" et_id="{{ et.id }}" type="folk">Add custom spell</button>
+      </div>
+
+      <button class="add_custom_spell btn btn-primary" et_id="{{ et.id }}" type="theism">Add custom spell</button>
     </div>
+  </div>
 </div>
 
-&nbsp;
-<div id="theism_spells_container" {% if not et.is_theist %} style="display: none; " {% endif %}>
-    <span id="theism_spells_header" style="cursor: pointer;"><h3 style="display: inline">Theism Spells </h3><span style="font-size:9px">Click to show/hide</span></span>
-    &nbsp;
-    <div id="theism_spells_container_inner">
-        Amount:
-        <input id="et_theism_spells_{{ et.id }}" class="data" size="6" type="text" item_id="{{ et.id }}" item_type="et_theism_spell_amount"
-            value="{{ et.theism_spell_amount }}" /><br>
-        <table>
+<div id="sorcery_spells_container" class="card shadow-sm mb-3" {% if not et.is_sorcerer %} style="display: none; " {% endif %}>
+  <div class="card-body">
+    <span id="sorcery_spells_header" style="cursor: pointer;">
+      <h3 class="h5 card-title d-inline">Sorcery Spells</h3>
+      <span class="text-muted small">Click to show/hide</span>
+    </span>
+
+    <div id="sorcery_spells_container_inner" class="mt-2">
+      <div class="row g-3 align-items-end mb-2">
+        <div class="col-auto">
+          <label for="et_sorcery_spells_{{ et.id }}" class="form-label mb-0">Amount</label>
+        </div>
+        <div class="col-auto">
+          <input id="et_sorcery_spells_{{ et.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ et.id }}" item_type="et_sorcery_spell_amount" value="{{ et.sorcery_spell_amount }}" />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-2">
+          <thead>
             <tr>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
+              <th>Spell</th>
+              <th>Prob.</th>
+              <th>Spell</th>
+              <th>Prob.</th>
+              <th>Spell</th>
+              <th>Prob.</th>
             </tr>
+          </thead>
+          <tbody>
             <tr>
-                {% for spell in theism_spells %}
-                <td>{% if not spell.custom %}
-                    {{ spell.name }}
-                    {% else %}
-                    <input autocomplete="off" id="custom_spell_name_{{spell.id}}" class="data" type="text" size="18" item_id="{{spell.id}}"
-                        parent_id="{{et.id}}" item_type="et_custom_spell_name" value="{{ spell.name }}" />
-                    {% endif %}
-                    {% if spell.detail %}
-                    <input id="spell_detail_{{spell.id}}" class="data" type="text" size="10" item_id="{{spell.id}}" parent_id="{{et.id}}"
-                        item_type="et_spell_detail" value="{{ spell.detail_text }}" />
-                    {% endif %}
-                </td>
-                <td>{% if not spell.custom %}
-                    <input id="spell_{{spell.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}"
-                        item_type="et_spell_prob" value="{{ spell.probability }}" />
-                    {% else %}
-                    <input id="custom_spell_{{spell.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spell.id}}"
-                        parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
-                    <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item" item_id="{{ spell.id }}" item_type="et_custom_spell" />
-                    {% endif %}
-                </td>
-                {% if not forloop.first and forloop.counter|divisibleby:"4" %}
+            {% for spell in sorcery_spells %}
+              <td>
+                {% if not spell.custom %}
+                  {{ spell.name }}
+                {% else %}
+                  <input autocomplete="off" id="custom_spell_name_{{spell.id}}" class="data form-control form-control-sm d-inline-block" type="text" size="20" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_name" value="{{ spell.name }}" />
+                {% endif %}
+                {% if spell.detail %}
+                  <input id="spell_detail_{{spell.id}}" class="data form-control form-control-sm d-inline-block ms-1" type="text" size="9" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_spell_detail" value="{{ spell.detail_text }}" />
+                {% endif %}
+              </td>
+              <td>
+                {% if not spell.custom %}
+                  <input id="spell_{{spell.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_spell_prob" value="{{ spell.probability }}" />
+                {% else %}
+                  <input id="custom_spell_{{spell.id}}" class="data number form-control form-control-sm d-inline-block" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
+                  <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item ms-1" item_id="{{ spell.id }}" item_type="et_custom_spell" alt="Delete" />
+                {% endif %}
+              </td>
+              {% if not forloop.first and forloop.counter|divisibleby:"3" %}
+            </tr><tr>
+              {% endif %}
+            {% endfor %}
             </tr>
-            <tr>{% endif %}
-                {% endfor %}
-            </tr>
+          </tbody>
         </table>
-        <button class="add_custom_spell" et_id="{{ et.id }}" type="theism">Add custom spell</button>
+      </div>
+
+      <button class="add_custom_spell btn btn-primary" et_id="{{ et.id }}" type="sorcery">Add custom spell</button>
     </div>
+  </div>
 </div>
 
-&nbsp;
-<div id="sorcery_spells_container" {% if not et.is_sorcerer %} style="display: none; " {% endif %}>
-    <span id="sorcery_spells_header" style="cursor: pointer;"><h3 style="display: inline">Sorcery Spells </h3><span style="font-size:9px">Click to show/hide</span></span>
-    &nbsp;
-    <div id="sorcery_spells_container_inner">
-        Amount:
-        <input id="et_sorcery_spells_{{ et.id }}" class="data" size="6" type="text" item_id="{{ et.id }}" item_type="et_sorcery_spell_amount"
-            value="{{ et.sorcery_spell_amount }}" /><br>
-        <table>
+<div id="mysticism_spells_container" class="card shadow-sm mb-3" {% if not et.is_mystic %} style="display: none; " {% endif %}>
+  <div class="card-body">
+    <span id="mysticism_spells_header" style="cursor: pointer;">
+      <h3 class="h5 card-title d-inline">Mysticism Spells</h3>
+      <span class="text-muted small">Click to show/hide</span>
+    </span>
+
+    <div id="mysticism_spells_container_inner" class="mt-2">
+      <div class="row g-3 align-items-end mb-2">
+        <div class="col-auto">
+          <label for="et_mysticism_spells_{{ et.id }}" class="form-label mb-0">Amount</label>
+        </div>
+        <div class="col-auto">
+          <input id="et_mysticism_spells_{{ et.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ et.id }}" item_type="et_mysticism_spell_amount" value="{{ et.mysticism_spell_amount }}" />
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-2">
+          <thead>
             <tr>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Spell</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Spell</th>
-                <th>Prob.</th>
+              <th>Talent</th>
+              <th>Prob.</th>
+              <th>Talent</th>
+              <th>Prob.</th>
+              <th>Talent</th>
+              <th>Prob.</th>
             </tr>
+          </thead>
+          <tbody>
             <tr>
-                {% for spell in sorcery_spells %}
-                <td>{% if not spell.custom %}
-                    {{ spell.name }}
-                    {% else %}
-                    <input autocomplete="off" id="custom_spell_name_{{spell.id}}" class="data" type="text" size="20" item_id="{{spell.id}}"
-                        parent_id="{{et.id}}" item_type="et_custom_spell_name" value="{{ spell.name }}" />
-                    {% endif %}
-                    {% if spell.detail %}
-                    <input id="spell_detail_{{spell.id}}" class="data" type="text" size="9" item_id="{{spell.id}}" parent_id="{{et.id}}"
-                        item_type="et_spell_detail" value="{{ spell.detail_text }}" />
-                    {% endif %}
-                </td>
-                <td>{% if not spell.custom %}
-                    <input id="spell_{{spell.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}"
-                        item_type="et_spell_prob" value="{{ spell.probability }}" />
-                    {% else %}
-                    <input id="custom_spell_{{spell.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spell.id}}"
-                        parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
-                    <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item" item_id="{{ spell.id }}" item_type="et_custom_spell" />
-                    {% endif %}
-                </td>
-                {% if not forloop.first and forloop.counter|divisibleby:"3" %}
+            {% for spell in mysticism_spells %}
+              <td>
+                {% if not spell.custom %}
+                  {{ spell.name }}
+                {% else %}
+                  <input autocomplete="off" id="custom_spell_name_{{spell.id}}" class="data form-control form-control-sm d-inline-block" type="text" size="20" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_name" value="{{ spell.name }}" />
+                {% endif %}
+                {% if spell.detail %}
+                  <input id="spell_detail_{{spell.id}}" class="data form-control form-control-sm d-inline-block ms-1" type="text" size="9" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_spell_detail" value="{{ spell.detail_text }}" />
+                {% endif %}
+              </td>
+              <td>
+                {% if not spell.custom %}
+                  <input id="spell_{{spell.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_spell_prob" value="{{ spell.probability }}" />
+                {% else %}
+                  <input id="custom_spell_{{spell.id}}" class="data number form-control form-control-sm d-inline-block" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
+                  <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item ms-1" item_id="{{ spell.id }}" item_type="et_custom_spell" alt="Delete" />
+                {% endif %}
+              </td>
+              {% if not forloop.first and forloop.counter|divisibleby:"3" %}
+            </tr><tr>
+              {% endif %}
+            {% endfor %}
             </tr>
-            <tr>{% endif %}
-                {% endfor %}
-            </tr>
+          </tbody>
         </table>
-        <button class="add_custom_spell" et_id="{{ et.id }}" type="sorcery">Add custom spell</button>
+      </div>
+
+      <button class="add_custom_spell btn btn-primary" et_id="{{ et.id }}" type="mysticism">Add custom talent</button>
     </div>
+  </div>
 </div>
 
-&nbsp;
-<div id="mysticism_spells_container" {% if not et.is_mystic %} style="display: none; " {% endif %}>
-    <span id="mysticism_spells_header" style="cursor: pointer;"><h3 style="display: inline">Mysticism Spells </h3><span style="font-size:9px">Click to show/hide</span></span>
-    &nbsp;
-    <div id="mysticism_spells_container_inner">
-        Amount:
-        <input id="et_mysticism_spells_{{ et.id }}" class="data" size="6" type="text" item_id="{{ et.id }}" item_type="et_mysticism_spell_amount"
-            value="{{ et.mysticism_spell_amount }}" /><br>
-        <table>
-            <tr>
-                <th>Talent</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Talent</th>
-                <th>Prob.&nbsp;&nbsp;&nbsp;</th>
-                <th>Talent</th>
-                <th>Prob.</th>
-            </tr>
-            <tr>
-                {% for spell in mysticism_spells %}
-                <td>{% if not spell.custom %}
-                    {{ spell.name }}
-                    {% else %}
-                    <input autocomplete="off" id="custom_spell_name_{{spell.id}}" class="data" type="text" size="20" item_id="{{spell.id}}"
-                        parent_id="{{et.id}}" item_type="et_custom_spell_name" value="{{ spell.name }}" />
-                    {% endif %}
-                    {% if spell.detail %}
-                    <input id="spell_detail_{{spell.id}}" class="data" type="text" size="9" item_id="{{spell.id}}" parent_id="{{et.id}}"
-                        item_type="et_spell_detail" value="{{ spell.detail_text }}" />
-                    {% endif %}
-                </td>
-                <td>{% if not spell.custom %}
-                    <input id="spell_{{spell.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}"
-                        item_type="et_spell_prob" value="{{ spell.probability }}" />
-                    {% else %}
-                    <input id="custom_spell_{{spell.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spell.id}}"
-                        parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
-                    <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item" item_id="{{ spell.id }}" item_type="et_custom_spell" />
-                    {% endif %}
-                </td>
-                {% if not forloop.first and forloop.counter|divisibleby:"3" %}
-            </tr>
-            <tr>{% endif %}
-                {% endfor %}
-            </tr>
-        </table>
-        <button class="add_custom_spell" et_id="{{ et.id }}" type="mysticism">Add custom talent</button>
-    </div>
-</div>
+<div id="spirits_container" class="card shadow-sm mb-3" {% if not et.is_animist %} style="display: none; " {% endif %}>
+  <div class="card-body">
+    <span id="spirits_header" style="cursor: pointer;">
+      <h3 class="h5 card-title d-inline">Spirits</h3>
+      <span class="text-muted small">Click to show/hide</span>
+    </span>
 
-&nbsp;
-<div id="spirits_container" {% if not et.is_animist %} style="display: none; " {% endif %}>
-    <span id="spirits_header" style="cursor: pointer;"><h3 style="display: inline">Spirits</h3><span style="font-size:9px">Click to show/hide</span></span>
-    &nbsp;
-    <div id="spirits_container_inner">
-        Amount:
-        <input id="et_animism_spirits_{{ et.id }}" class="data" size="6" type="text" item_id="{{ et.id }}" item_type="et_spirit_amount"
-            value="{{ et.spirit_amount }}" /><br>
-        <table>
+    <div id="spirits_container_inner" class="mt-2">
+      <div class="row g-3 align-items-end mb-2">
+        <div class="col-auto">
+          <label for="et_animism_spirits_{{ et.id }}" class="form-label mb-0">Amount</label>
+        </div>
+        <div class="col-auto">
+          <input id="et_animism_spirits_{{ et.id }}" class="data form-control form-control-sm d-inline-block" style="width:6rem;" type="text" item_id="{{ et.id }}" item_type="et_spirit_amount" value="{{ et.spirit_amount }}" />
+        </div>
+      </div>
+
+      <div class="table-responsive mb-2">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
             <tr>
-                <th>Spirit</th>
-                <th>Prob.</th>
-                <th></th>
+              <th>Spirit</th>
+              <th style="width: 120px;">Prob.</th>
+              <th style="width: 32px;"></th>
             </tr>
+          </thead>
+          <tbody>
             {% for spirit in et.spirits %}
             <tr>
-                <td><a href="{% url 'enemy_template' spirit.spirit.id %}">{{ spirit.name }}</a></td>
-                <td><input id="spirit_{{spirit.id}}" class="data number" type="number" min="0" max="9999" item_id="{{spirit.id}}"
-                        parent_id="{{et.id}}" item_type="et_spirit_prob" value="{{ spirit.probability }}" /></td>
-                <td><img src="{% static 'minus.png' %}" width="16" height="16" class="del_item" item_id="{{ spirit.id }}" item_type="et_spirit" /></td>
+              <td><a href="{% url 'enemy_template' spirit.spirit.id %}">{{ spirit.name }}</a></td>
+              <td><input id="spirit_{{spirit.id}}" class="data number form-control form-control-sm" type="number" min="0" max="9999" item_id="{{spirit.id}}" parent_id="{{et.id}}" item_type="et_spirit_prob" value="{{ spirit.probability }}" /></td>
+              <td class="text-end"><img src="{% static 'minus.png' %}" width="16" height="16" class="del_item" item_id="{{ spirit.id }}" item_type="et_spirit" alt="Delete" /></td>
             </tr>
             {% endfor %}
-
+          </tbody>
         </table>
-        <select multiple id="spirit_options" name="spirit_options" size="4">
+      </div>
+
+      <div class="row g-3 align-items-start">
+        <div class="col-12 col-md-8">
+          <label for="spirit_options" class="form-label">Add from available spirits</label>
+          <select multiple id="spirit_options" name="spirit_options" size="6" class="form-select">
             {% for spirit in spirit_options %}
-            <option value="{{ spirit.id }}">{{ spirit.name }}</option>
+              <option value="{{ spirit.id }}">{{ spirit.name }}</option>
             {% endfor %}
-        </select>
-        <button id="add_spirit" et_id="{{ et.id }}">Add spirit(s)</button>
+          </select>
+        </div>
+        <div class="col-12 col-md-4 d-flex align-items-end">
+          <button id="add_spirit" et_id="{{ et.id }}" class="btn btn-primary">Add spirit(s)</button>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
