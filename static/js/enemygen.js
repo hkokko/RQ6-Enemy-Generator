@@ -288,6 +288,38 @@ $(document).ready(function () {
         $(this).data('default_value', this.checked);
     });
 
+    // Option B: Optimistic toggle for skill include checkboxes using a dedicated class to avoid double submit
+    $(document).on('change', 'input.feature-toggle[type="checkbox"]', async function(e){
+        const cb = e.target;
+        const featureId = cb.getAttribute('data-item-id');
+        const objectType = cb.getAttribute('data-item-type');
+        const newValue = cb.checked; // optimistic
+        cb.disabled = true;
+        try {
+            const res = await axios.post(`/rest/submit/${featureId}/`, { value: newValue, object: objectType });
+            // On success, keep UI as-is. Also trigger magic section visibility if applicable
+            const name = (cb.getAttribute('data-skill-name') || '').toLowerCase();
+            if (name) {
+                if (name.indexOf('devotion') === 0) {
+                    $('#theism_spells_container').toggle(newValue);
+                } else if (name.indexOf('folk magic') === 0) {
+                    $('#folk_spells_container').toggle(newValue);
+                } else if (name.indexOf('binding') === 0) {
+                    $('#spirits_container').toggle(newValue);
+                } else if (name.indexOf('mysticism') === 0) {
+                    $('#mysticism_spells_container').toggle(newValue);
+                } else if (name.indexOf('shaping') === 0 || name.indexOf('invocation') === 0) {
+                    $('#sorcery_spells_container').toggle(newValue);
+                }
+            }
+        } catch (err) {
+            cb.checked = !newValue; // revert on failure
+            alert('Saving failed. Please try again.');
+        } finally {
+            cb.disabled = false;
+        }
+    });
+
     $('.add_custom_spell').click(function (event) {
         add_custom_spell(event);
     })
