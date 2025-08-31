@@ -39,10 +39,29 @@ class ValidationError(Exception):
 
 
 def to_bool(text):
-    if isinstance(text, str) and (text.lower() == 'false' or text) == '':
+    """Robust boolean coercion for various frontend/backend representations.
+    Accepts booleans, numbers, and strings like 'true', 'false', '1', '0', '', None.
+    """
+    # Pass-through real booleans
+    if isinstance(text, bool):
+        return text
+    # Handle None
+    if text is None:
         return False
-    else:
+    # Handle numbers/strings that look like numbers
+    try:
+        if isinstance(text, (int, float)):
+            return bool(int(text))
+        s = str(text).strip().lower()
+    except Exception:
+        # Fallback best-effort
         return bool(text)
+    if s in ('', 'false', '0', 'no', 'off', 'none', 'null'):
+        return False
+    if s in ('true', '1', 'yes', 'on'):
+        return True
+    # Fallback: Python truthiness
+    return bool(text)
     
 
 def replace_die_set(die_set, replace=None):

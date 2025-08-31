@@ -2,10 +2,18 @@ function submit_callback(result, input_object){
     if (result.success){
         $('#commit_result').html('Save successful');
         animate_background(input_object, true);
-        $(input_object).val(result.value);
+        // Persist visual state correctly for checkboxes vs text inputs
+        if (input_object && input_object.type === 'checkbox'){
+            var boolVal = (result.value === true || result.value === 'true' || result.value === 1 || result.value === '1');
+            $(input_object).prop('checked', boolVal);
+            // Update the stored default value to prevent immediate re-submits
+            $(input_object).data('default_value', boolVal);
+        } else {
+            $(input_object).val(result.value);
+        }
     } else {
         if (input_object && input_object.type == 'checkbox'){
-            $(input_object).prop('checked', result.original_value);
+            $(input_object).prop('checked', !!result.original_value);
         } else {
             $(input_object).val(result.original_value);
             animate_background(input_object, false);
@@ -16,16 +24,16 @@ function submit_callback(result, input_object){
 }
 
 function bind_change_listeners(event){
-	var original_value = $(event.target).data("default_value");
-	if (event.target.type == 'checkbox') {
-		var new_value = event.target.checked;
-	} else {
-		var new_value = $(event.target).val();
-	}
+	var $target = $(event.target);
+	var original_value = $target.data("default_value");
+	var isCheckbox = (event.target.type == 'checkbox');
+	var new_value = isCheckbox ? event.target.checked : $target.val();
 	if (new_value != original_value){
-		var item_id = $(event.target).attr('item_id');
-		var parent_id = $(event.target).attr('parent_id');
-		var item_type = $(event.target).attr('item_type');
+		// Optimistically update default_value so UI doesn't flip back while waiting server response
+		$target.data('default_value', new_value);
+		var item_id = $target.attr('item_id');
+		var parent_id = $target.attr('parent_id');
+		var item_type = $target.attr('item_type');
 		submit(item_id, item_type, event.target, new_value, parent_id)
 	}
 }

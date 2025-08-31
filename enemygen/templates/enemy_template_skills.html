@@ -42,7 +42,7 @@
         <div class="border rounded p-2 d-flex align-items-center gap-2">
           <div class="flex-grow-1 text-nowrap" style="min-width: 120px;">{{ skill.name }}</div>
           <div class="form-check m-0">
-            <input id="pro_skill_include_{{skill.skill.id}}" class="data form-check-input" type="checkbox" item_id="{{skill.id}}" item_type="et_skill_include" {% if skill.include %}checked="checked"{% endif %} />
+            <input id="pro_skill_include_{{skill.skill.id}}" class="data form-check-input" type="checkbox" item_id="{{skill.id}}" item_type="et_skill_include" data-skill-name="{{ skill.name }}" {% if skill.include %}checked="checked"{% endif %} />
           </div>
           <input id="pro_skill_{{skill.skill.id}}" class="data form-control form-control-sm" style="min-width: 180px; max-width: 260px;" type="text" item_id="{{skill.id}}" item_type="et_skill_value" value="{{ skill.die_set }}" placeholder="e.g. STR+DEX+4D10+24" />
         </div>

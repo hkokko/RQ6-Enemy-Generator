@@ -276,10 +276,14 @@ class EnemyTemplate(models.Model):
     def is_sorcerer(self):
         if self.is_cult:
             return True
+        # Support either 'Shaping' (Mythras) or 'Invocation' (variant wording)
         try:
             return EnemySkill.objects.get(skill__name='Shaping', enemy_template=self).include
         except EnemySkill.DoesNotExist:
-            return False
+            try:
+                return EnemySkill.objects.get(skill__name='Invocation', enemy_template=self).include
+            except EnemySkill.DoesNotExist:
+                return False
     
     @property
     def is_mystic(self):

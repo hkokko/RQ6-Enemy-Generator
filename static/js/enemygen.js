@@ -276,7 +276,16 @@ $(document).ready(function () {
     });
 
     $('input.data').focus(function (event) {
-        $(event.target).data("default_value", $(event.target).val());
+        if (event.target.type === 'checkbox'){
+            $(event.target).data("default_value", event.target.checked);
+        } else {
+            $(event.target).data("default_value", $(event.target).val());
+        }
+    });
+
+    // Initialize default_value for all checkboxes on load to avoid undefined state on first click
+    $('input.data:checkbox').each(function(){
+        $(this).data('default_value', this.checked);
     });
 
     $('.add_custom_spell').click(function (event) {
@@ -347,6 +356,7 @@ $(document).ready(function () {
         add_nonrandom_feature(event);
     });
 
+    // Legacy ID-based toggles (kept for backward compatibility with known IDs)
     $('#pro_skill_include_24').change(function (event) {  // Shaping
         $('#sorcery_spells_container').toggle();
     })
@@ -362,6 +372,24 @@ $(document).ready(function () {
     $('#pro_skill_include_30').change(function (event) {  // Mysticism
         $('#mysticism_spells_container').toggle();
     })
+
+    // Generic, name-based toggles (supports Invocation vs Shaping, etc.)
+    $('input.form-check-input[data-skill-name]').change(function (event) {
+        var name = ($(event.target).attr('data-skill-name') || '').toLowerCase();
+        // Normalize common variants
+        if (name.indexOf('devotion') === 0) {
+            $('#theism_spells_container').toggle();
+        } else if (name.indexOf('folk magic') === 0) {
+            $('#folk_spells_container').toggle();
+        } else if (name.indexOf('binding') === 0) {
+            $('#spirits_container').toggle();
+        } else if (name.indexOf('mysticism') === 0) {
+            $('#mysticism_spells_container').toggle();
+        } else if (name.indexOf('shaping') === 0 || name.indexOf('invocation') === 0) {
+            $('#sorcery_spells_container').toggle();
+        }
+    });
+
     $('img.star').click(function (event) {
         toggle_star(event);
     })
