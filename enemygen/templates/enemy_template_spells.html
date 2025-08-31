@@ -22,6 +22,12 @@
 #spirits_container_inner input[type=number] {
   -moz-appearance: textfield;
 }
+#folk_spells_container_inner .input-group-text,
+#theism_spells_container_inner .input-group-text,
+#sorcery_spells_container_inner .input-group-text,
+#mysticism_spells_container_inner .input-group-text {
+  display: none;
+}
 </style>
 
 <div id="folk_spells_container" class="card shadow-sm mb-3" {% if not et.is_folk_magician %} style="display: none; " {% endif %}>
@@ -79,7 +85,6 @@
                 {% else %}
                   <input id="custom_spell_{{spell.id}}" class="data number form-control" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
                 {% endif %}
-                <span class="input-group-text">%</span>
               </div>
               {% if spell.custom %}
                 <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item ms-1" item_id="{{ spell.id }}" item_type="et_custom_spell" alt="Delete" />
@@ -154,7 +159,6 @@
                   {% else %}
                     <input id="custom_spell_{{spell.id}}" class="data number form-control" type="number" min="0" max="9999" item_id="{{spell.id}}" parent_id="{{et.id}}" item_type="et_custom_spell_prob" value="{{ spell.probability }}" />
                   {% endif %}
-                  <span class="input-group-text">%</span>
                 </div>
                 {% if spell.custom %}
                   <img src="{% static 'minus.png' %}" width="16" height="16" class="del_item ms-1" item_id="{{ spell.id }}" item_type="et_custom_spell" alt="Delete" />
