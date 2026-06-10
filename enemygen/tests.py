@@ -5,10 +5,14 @@ when you run "manage.py test".
 Replace this with more appropriate tests for your application.
 """
 from django.test import TestCase
+from django.test import RequestFactory, SimpleTestCase
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 
 from collections import OrderedDict
 import json
+
+from mythras_eg.middleware import SimpleCorsMiddleware
 
 from .dice import Dice, _die_to_tuple, clean
 
@@ -375,6 +379,53 @@ class TestJson(TestCase):
         self.assertEqual(edict[0]['combat_styles'][0]['name'], 'Primary Combat Style')
         self.assertEqual(list(edict[0]['skills'][2].keys())[0], 'Endurance')
         self.assertEqual(edict[0]['skills'][2]['Endurance'], enemy.skills_dict['Endurance'])
+
+
+class TestPublicCors(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_public_json_endpoint_adds_cors_headers(self):
+        middleware = SimpleCorsMiddleware(lambda request: HttpResponse("[]"))
+        response = middleware(self.factory.get("/index_json/"))
+
+        self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+        self.assertEqual(response["Access-Control-Allow-Methods"], "GET, OPTIONS")
+        self.assertEqual(response["Access-Control-Allow-Headers"], "Accept, Content-Type")
+
+    def test_public_json_endpoint_allows_options_preflight(self):
+        middleware = SimpleCorsMiddleware(lambda request: HttpResponse(status=405))
+        response = middleware(self.factory.options("/generate_enemies_json/"))
+
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+        self.assertEqual(response["Access-Control-Allow-Methods"], "GET, OPTIONS")
+        self.assertEqual(response["Access-Control-Allow-Headers"], "Accept, Content-Type")
+
+    def test_generated_json_endpoints_allow_query_params(self):
+        middleware = SimpleCorsMiddleware(lambda request: HttpResponse("{}"))
+
+        for path in (
+            "/generate_enemies_json/?id=1&amount=2",
+            "/generate_party_json/?id=1",
+        ):
+            response = middleware(self.factory.get(path))
+            self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+            self.assertEqual(response["Access-Control-Allow-Methods"], "GET, OPTIONS")
+            self.assertEqual(response["Access-Control-Allow-Headers"], "Accept, Content-Type")
+
+    def test_generated_json_preflight_allows_query_params(self):
+        middleware = SimpleCorsMiddleware(lambda request: HttpResponse(status=405))
+
+        for path in (
+            "/generate_enemies_json/?id=1&amount=2",
+            "/generate_party_json/?id=1",
+        ):
+            response = middleware(self.factory.options(path))
+            self.assertEqual(response.status_code, 204)
+            self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+            self.assertEqual(response["Access-Control-Allow-Methods"], "GET, OPTIONS")
+            self.assertEqual(response["Access-Control-Allow-Headers"], "Accept, Content-Type")
 
 
 def get_enemy_template():
