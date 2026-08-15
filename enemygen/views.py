@@ -42,7 +42,7 @@ def simple_index(request):
 @require_GET
 def index_json(request):
     out = []
-    for et in get_enemy_templates(get_filter(request), request.user):
+    for et in get_enemy_templates(get_filter(request), request.user, published_only=True):
         out.append({
             'name': et.name, 'race': et.race.name, 'rank': et.rank, 'owner': et.owner.username,
             'tags': et.get_tags(), 'id': et.id, 'notes': et.notes

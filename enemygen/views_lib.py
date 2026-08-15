@@ -78,15 +78,17 @@ def get_party_context(party):
     return context
 
 
-def get_enemy_templates(filtr, user):
+def get_enemy_templates(filtr, user, published_only=False):
     published_templates = EnemyTemplate.objects.filter(published=True).order_by('rank').exclude(race__name='Cult').select_related('race')
     if filtr and filtr not in ('None', 'Starred'):
         templates = list(published_templates.filter(tags__name__in=[filtr, ]))
     elif filtr == 'Starred':
         templates = EnemyTemplate.get_starred(user)
+        if published_only:
+            templates = [et for et in templates if et.published]
     else:
         templates = list(published_templates)
-    if user.is_authenticated:
+    if user.is_authenticated and not published_only:
         # Add the unpublished templates of the logged-in user
         unpubl = EnemyTemplate.objects.filter(published=False, owner=user).order_by('rank').exclude(race__name='Cult').select_related('race')
         if filtr:

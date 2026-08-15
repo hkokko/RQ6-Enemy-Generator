@@ -14,6 +14,15 @@ Mythras Encounter Generator has been tested with Python 3.11. Other versions mig
 * Install requirements from `requirements.txt`
 * Create a folder named `temp` in the project directory (it's not possible to add empty folders to git)
 
+For a quick local setup using SQLite (recommended for development), you can use the automated script:
+
+```bash
+chmod +x setup_sqlite.sh
+./setup_sqlite.sh
+```
+
+See [SQLITE_DEV.md](SQLITE_DEV.md) for more details.
+
 ### WeasyPrint
 
 If you want to use PDF/PNG export features, follow OS-specific installation instructions for WeasyPrint at
