@@ -53,6 +53,9 @@ DATABASES = {
 Ensure `STATICFILES_DIRS` and `TEMP` are also correctly set (they are by default in `settings_example.py`).
 
 ### 3. Initialize Database
+You can either initialize a clean database with minimal test data or import production data from a MySQL dump.
+
+#### Option A: Clean Database (Test Data)
 ```bash
 # Apply migrations to create the database schema
 python3 manage.py migrate
@@ -73,6 +76,42 @@ Running migrations:
 
 $ python3 manage.py loaddata enemygen_testdata.json
 Installed 1998 object(s) from 1 fixture(s)
+```
+
+#### Option B: Import Production Data (MySQL Dump)
+If you have a `dump.sql` file in MySQL format, you can import it into SQLite using the `smart_import.py` script. This script automatically maps columns and handles MySQL-to-SQLite data conversion.
+
+```bash
+# 1. First, ensure the SQLite schema is created
+python3 manage.py migrate
+
+# 2. Run the import script (expects dump.sql and db.sqlite3 to exist)
+python3 smart_import.py
+
+# 3. Synchronize migration history
+# Since the dump may not contain django_migrations, you must fake the migrations
+# to tell Django that the tables already exist.
+python3 manage.py migrate --fake-initial
+python3 manage.py migrate --fake
+
+# 4. (Optional) Verify the migration
+python3 verify_migration.py
+```
+
+**Example Output:**
+```text
+$ python3 smart_import.py
+Importing block for auth_user...
+Importing block for enemygen_enemytemplate...
+...
+Done!
+
+$ python3 manage.py migrate --fake
+Operations to perform:
+  Apply all migrations: admin, auth, contenttypes, enemygen, sessions, taggit
+Running migrations:
+  Applying contenttypes.0001_initial... FAKED
+  ...
 ```
 
 ### 4. Run Server
@@ -111,4 +150,37 @@ Ran 23 tests in 1.226s
 
 OK
 Destroying test database for alias 'default'...
+```
+
+---
+
+### Switching between MySQL and SQLite
+MySQL is the primary and default database engine for Mythras Encounter Generator. SQLite is provided as an alternative to simplify local development and testing.
+
+#### To use MySQL (Default):
+Ensure your `mythras_eg/settings.py` contains the MySQL configuration (as seen in `settings_example.py`):
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'enemygen',
+        'USER': 'your_user',
+        'PASSWORD': 'your_password',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
+```
+
+#### To use SQLite:
+Modify the `DATABASES` block in `mythras_eg/settings.py` to point to the SQLite engine:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(PROJECT_ROOT, 'db.sqlite3'),
+    }
+}
 ```
