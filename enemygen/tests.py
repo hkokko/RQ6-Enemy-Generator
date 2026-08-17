@@ -16,7 +16,7 @@ from mythras_eg.middleware import SimpleCorsMiddleware
 
 from .dice import Dice, _die_to_tuple, clean
 
-from .models import EnemyTemplate, _Enemy, Ruleset, StatAbstract, Race, SpellAbstract
+from .models import EnemyTemplate, _Enemy, Ruleset, StatAbstract, Race, SpellAbstract, Party
 from .models import EnemyStat, EnemySkill, SkillAbstract, EnemySpell
 from .models import CombatStyle, Weapon
 from .enemygen_lib import select_random_item, replace_die_set
@@ -459,35 +459,39 @@ class TestViewFiltering(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='password')
+        self.other_user = User.objects.create_user(username='otheruser', password='password')
         self.ruleset = Ruleset.objects.get(id=1)
         self.race = Race.objects.get(id=1)
 
-        # Create a published template
+        # Create enemy templates
         self.pub_et = EnemyTemplate.create(self.user, self.ruleset, self.race, 'Published Template')
         self.pub_et.published = True
         self.pub_et.save()
 
-        # Create an unpublished template
         self.unpub_et = EnemyTemplate.create(self.user, self.ruleset, self.race, 'Unpublished Template')
         self.unpub_et.published = False
         self.unpub_et.save()
+
+        # Create parties
+        self.pub_pt = Party.objects.create(name='Published Party', owner=self.user, published=True)
+        self.unpub_pt = Party.objects.create(name='Unpublished Party', owner=self.user, published=False)
 
     def test_get_enemy_templates_filtering(self):
         from .views_lib import get_enemy_templates
         from django.contrib.auth.models import AnonymousUser
 
-        # Anonymous user, published_only=False (default) -> only published
+        # Anonymous user -> only published
         templates = get_enemy_templates(None, AnonymousUser())
         self.assertTrue(any(et.name == 'Published Template' for et in templates))
         self.assertFalse(any(et.name == 'Unpublished Template' for et in templates))
 
-        # Authenticated user, published_only=False -> both
+        # Authenticated user (owner) -> both
         templates = get_enemy_templates(None, self.user)
         self.assertTrue(any(et.name == 'Published Template' for et in templates))
         self.assertTrue(any(et.name == 'Unpublished Template' for et in templates))
 
-        # Authenticated user, published_only=True -> only published
-        templates = get_enemy_templates(None, self.user, published_only=True)
+        # Authenticated user (non-owner) -> only published
+        templates = get_enemy_templates(None, self.other_user)
         self.assertTrue(any(et.name == 'Published Template' for et in templates))
         self.assertFalse(any(et.name == 'Unpublished Template' for et in templates))
 
@@ -503,11 +507,92 @@ class TestViewFiltering(TestCase):
         self.assertIn('Published Template', names)
         self.assertNotIn('Unpublished Template', names)
 
-        # Authenticated user - should STILL only see published
+        # Authenticated user (owner) - SHOULD see unpublished
         self.client.login(username='testuser', password='password')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
         names = [item['name'] for item in data]
         self.assertIn('Published Template', names)
+        self.assertIn('Unpublished Template', names)
+
+        # Authenticated user (non-owner) - SHOULD NOT see unpublished
+        self.client.login(username='otheruser', password='password')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        names = [item['name'] for item in data]
+        self.assertIn('Published Template', names)
         self.assertNotIn('Unpublished Template', names)
+
+    def test_party_index_json_filtering(self):
+        from django.urls import reverse
+        url = reverse('party_index_json')
+
+        # Anonymous user
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        names = [item['name'] for item in data]
+        self.assertIn('Published Party', names)
+        self.assertNotIn('Unpublished Party', names)
+
+        # Authenticated user (owner) - SHOULD see unpublished
+        self.client.login(username='testuser', password='password')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        names = [item['name'] for item in data]
+        self.assertIn('Published Party', names)
+        self.assertIn('Unpublished Party', names)
+
+        # Authenticated user (non-owner) - SHOULD NOT see unpublished
+        self.client.login(username='otheruser', password='password')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        names = [item['name'] for item in data]
+        self.assertIn('Published Party', names)
+        self.assertNotIn('Unpublished Party', names)
+
+    def test_enemy_template_detail_view_privacy(self):
+        from django.urls import reverse
+        pub_url = reverse('enemy_template', kwargs={'enemy_template_id': self.pub_et.id})
+        unpub_url = reverse('enemy_template', kwargs={'enemy_template_id': self.unpub_et.id})
+
+        # Published template: Everyone can see
+        self.client.logout()
+        self.assertEqual(self.client.get(pub_url).status_code, 200)
+        self.client.login(username='otheruser', password='password')
+        self.assertEqual(self.client.get(pub_url).status_code, 200)
+        self.client.login(username='testuser', password='password')
+        self.assertEqual(self.client.get(pub_url).status_code, 200)
+
+        # Unpublished template: Only owner can see
+        self.client.logout()
+        self.assertEqual(self.client.get(unpub_url).status_code, 404)
+        self.client.login(username='otheruser', password='password')
+        self.assertEqual(self.client.get(unpub_url).status_code, 404)
+        self.client.login(username='testuser', password='password')
+        self.assertEqual(self.client.get(unpub_url).status_code, 200)
+
+    def test_party_detail_view_privacy(self):
+        from django.urls import reverse
+        pub_url = reverse('party', kwargs={'party_id': self.pub_pt.id})
+        unpub_url = reverse('party', kwargs={'party_id': self.unpub_pt.id})
+
+        # Published party: Everyone can see
+        self.client.logout()
+        self.assertEqual(self.client.get(pub_url).status_code, 200)
+        self.client.login(username='otheruser', password='password')
+        self.assertEqual(self.client.get(pub_url).status_code, 200)
+        self.client.login(username='testuser', password='password')
+        self.assertEqual(self.client.get(pub_url).status_code, 200)
+
+        # Unpublished party: Only owner can see
+        self.client.logout()
+        self.assertEqual(self.client.get(unpub_url).status_code, 404)
+        self.client.login(username='otheruser', password='password')
+        self.assertEqual(self.client.get(unpub_url).status_code, 404)
+        self.client.login(username='testuser', password='password')
+        self.assertEqual(self.client.get(unpub_url).status_code, 200)

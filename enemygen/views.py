@@ -42,7 +42,7 @@ def simple_index(request):
 @require_GET
 def index_json(request):
     out = []
-    for et in get_enemy_templates(get_filter(request), request.user, published_only=True):
+    for et in get_enemy_templates(get_filter(request), request.user):
         out.append({
             'name': et.name, 'race': et.race.name, 'rank': et.rank, 'owner': et.owner.username,
             'tags': et.get_tags(), 'id': et.id, 'notes': et.notes
@@ -58,13 +58,13 @@ def home(request):
 def party_index(request):
     party_filter = get_party_filter(request)
     context = get_context(request)
-    context['parties'] = get_party_templates(party_filter)
+    context['parties'] = get_party_templates(party_filter, request.user)
     return render(request, 'party_index.html', context)
 
 @require_GET
 def party_index_json(request):
     out = []
-    for party in get_party_templates(get_party_filter(request)):
+    for party in get_party_templates(get_party_filter(request), request.user):
         party_json = {
             'name': party.name, 'owner': party.owner.username, 'tags': party.get_tags(), 'id': party.id, 'templates': []
         }
@@ -171,6 +171,8 @@ def enemy_template(request, enemy_template_id):
     context = get_context(request)
     template = 'enemy_template.html'
     et = get_object_or_404(EnemyTemplate.objects.select_related('race'), id=enemy_template_id)
+    if not et.published and et.owner != request.user:
+        raise Http404
     et.starred = et.is_starred(request.user)
     if et.is_cult:
         template = 'enemy_template_cult.html'
@@ -193,6 +195,8 @@ def party(request, party_id):
     template = 'party.html'
     context = get_context(request)
     pt = get_object_or_404(Party, id=party_id)
+    if not pt.published and pt.owner != request.user:
+        raise Http404
     context.update(get_party_context(pt))
     if context['party'].owner != request.user:
         template = 'party_read_only.html'

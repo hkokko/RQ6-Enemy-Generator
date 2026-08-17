@@ -61,11 +61,17 @@ def get_et_context(et):
     return context
 
 
-def get_party_templates(filtr=None):
+def get_party_templates(filtr=None, user=None, published_only=False):
+    published_parties = Party.objects.filter(published=True)
     if filtr and filtr != 'None':
-        parties = list(Party.objects.filter(tags__name__in=[filtr, ], published=True))
+        parties = list(published_parties.filter(tags__name__in=[filtr, ]))
     else:
-        parties = list(Party.objects.filter(published=True))
+        parties = list(published_parties)
+    if user and user.is_authenticated and not published_only:
+        unpubl = Party.objects.filter(published=False, owner=user)
+        if filtr and filtr != 'None':
+            unpubl = unpubl.filter(tags__name__in=[filtr, ])
+        parties.extend(list(unpubl))
     return parties
 
 
