@@ -3,14 +3,26 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve(strict=True).parent.parent
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mythras_eg',
-        'USER': 'mythras_eg',
-        'PASSWORD': '',
+# Database selection
+# Set USE_SQLITE=1 in your environment to use SQLite instead of MySQL
+USE_SQLITE = os.environ.get('USE_SQLITE', '0') == '1'
+
+if USE_SQLITE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(PROJECT_ROOT, 'db.sqlite3'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'mythras_eg',
+            'USER': 'mythras_eg',
+            'PASSWORD': '',
+        }
+    }
 
 SECRET_KEY = 'dev_secret_key'
 DEBUG = True

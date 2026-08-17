@@ -8,11 +8,14 @@ Hosted at https://mythras.skoll.xyz/
 
 Mythras Encounter Generator has been tested with Python 3.11. Other versions might or might not work.
 
-* Copy `mythras_eg/settings_example.py` to `mythras_eg/settings.py`
-  * Fill in DB configuration
-* It is recommended to create a virtualenv
-* Install requirements from `requirements.txt`
-* Create a folder named `temp` in the project directory (it's not possible to add empty folders to git)
+### Using MySQL (Default)
+1. Copy `mythras_eg/settings_example.py` to `mythras_eg/settings.py`
+2. Fill in your MySQL database configuration.
+3. Install requirements: `pip install -r requirements.txt`
+4. Create a folder named `temp` in the project directory.
+
+### Using SQLite (Development Alternative)
+For a faster setup without MySQL, you can use SQLite. See **[SQLITE_DEV.md](SQLITE_DEV.md)** for detailed instructions on automated setup and importing production data.
 
 ### WeasyPrint
 

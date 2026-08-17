@@ -5,5 +5,8 @@ mythras_eg/settings_prod.py
 temp/
 .vscode
 dump.sql
+db.sqlite3
+*.sqlite3
+data_only.sql
 .venv
 */__pycache__
