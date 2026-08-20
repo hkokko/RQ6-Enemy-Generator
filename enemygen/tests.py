@@ -504,8 +504,17 @@ class TestViewFiltering(TestCase):
         self.assertIn('Published Template', names)
         self.assertNotIn('Unpublished Template', names)
 
-        # Authenticated user - should STILL only see published
+        # Authenticated user - should see their own unpublished templates
         self.client.login(username='testuser', password='password')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        names = [item['name'] for item in data]
+        self.assertIn('Published Template', names)
+        self.assertIn('Unpublished Template', names)
+
+        # Other user - should NOT see owner's unpublished templates
+        self.client.login(username='otheruser', password='password')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
@@ -531,8 +540,17 @@ class TestViewFiltering(TestCase):
         self.assertIn('Published Party', names)
         self.assertNotIn('Unpublished Party', names)
 
-        # Authenticated user
+        # Authenticated user - should see their own unpublished parties
         self.client.login(username='testuser', password='password')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.content)
+        names = [item['name'] for item in data]
+        self.assertIn('Published Party', names)
+        self.assertIn('Unpublished Party', names)
+
+        # Other user - should NOT see owner's unpublished parties
+        self.client.login(username='otheruser', password='password')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.content)
