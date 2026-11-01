@@ -287,7 +287,7 @@ def get_statistics():
     clts = list({'name': c.name, 'id': c.id, 'rank': c.get_cult_rank_display(), 'rank_int': c.cult_rank} for c in cults)
     clts = sorted(clts, reverse=False, key=lambda et: et['name'])
 
-    output = {'templates': templates.filter(generated__gt=29).order_by('-generated'),
+    output = {'templates': templates.filter(used__gt=29).order_by('-used'),
               'races': races_stats,
               'users': users,
               'cults': clts,

@@ -239,3 +239,94 @@ class EnemyTemplateOptimizationTest(TestCase):
         
         self.template.refresh_from_db()
         self.assertEqual(self.template.used, initial_used + 1)
+
+
+class StatisticsViewTest(TestCase):
+    """Tests for the statistics page using the 'used' counter instead of 'generated'."""
+    fixtures = ('enemygen_testdata.json',)
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='statuser', password='password')
+        self.ruleset = Ruleset.objects.get(id=1)
+        self.race = Race.objects.get(id=1)
+
+    def test_statistics_uses_used_counter_for_ordering(self):
+        """
+        Purpose: Verifies that get_statistics() orders templates by 'used' (generation events),
+        not 'generated' (enemy instances).
+        Requirement: The statistics page should show templates sorted by how many times they
+        were generated, not by how many enemy instances were created.
+        """
+        from ..views_lib import get_statistics
+        
+        # Create two templates with different 'used' and 'generated' values
+        template_high_used = EnemyTemplate.create(self.user, self.ruleset, self.race, 'High Used')
+        template_high_used.published = True
+        template_high_used.used = 100
+        template_high_used.generated = 50
+        template_high_used.save()
+        
+        template_low_used = EnemyTemplate.create(self.user, self.ruleset, self.race, 'Low Used')
+        template_low_used.published = True
+        template_low_used.used = 50
+        template_low_used.generated = 200
+        template_low_used.save()
+        
+        stats = get_statistics()
+        templates_list = list(stats['templates'])
+        
+        # Both should appear (used > 29 threshold)
+        names = [t.name for t in templates_list]
+        self.assertIn('High Used', names)
+        self.assertIn('Low Used', names)
+        
+        # High Used should come before Low Used
+        high_idx = names.index('High Used')
+        low_idx = names.index('Low Used')
+        self.assertLess(high_idx, low_idx)
+
+    def test_statistics_filters_by_used_not_generated(self):
+        """
+        Purpose: Verifies that get_statistics() filters templates by 'used' > 29, not 'generated' > 29.
+        Requirement: Templates with high 'generated' but low 'used' should not appear.
+        """
+        from ..views_lib import get_statistics
+        
+        # Template with high 'generated' but low 'used' — should NOT appear
+        template = EnemyTemplate.create(self.user, self.ruleset, self.race, 'Hidden')
+        template.published = True
+        template.used = 5
+        template.generated = 500
+        template.save()
+        
+        stats = get_statistics()
+        names = [t.name for t in stats['templates']]
+        self.assertNotIn('Hidden', names)
+        
+        # Template with high 'used' but low 'generated' — should appear
+        template2 = EnemyTemplate.create(self.user, self.ruleset, self.race, 'Visible')
+        template2.published = True
+        template2.used = 50
+        template2.generated = 10
+        template2.save()
+        
+        stats = get_statistics()
+        names = [t.name for t in stats['templates']]
+        self.assertIn('Visible', names)
+
+    def test_statistics_page_displays_used_counter(self):
+        """
+        Purpose: Verifies that the statistics page template displays the 'used' counter.
+        Requirement: The HTML should show template.used, not template.generated.
+        Note: This test checks the template source rather than rendering due to Python 3.14
+        compatibility issues with Django template rendering in tests.
+        """
+        # Verify the template uses {{template.used}} instead of {{template.generated}}
+        import os
+        template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'statistics.html')
+        with open(template_path, 'r') as f:
+            content = f.read()
+        
+        # The template should display template.used, not template.generated
+        self.assertIn('{{template.used}}', content)
+        self.assertNotIn('{{template.generated}}', content)
